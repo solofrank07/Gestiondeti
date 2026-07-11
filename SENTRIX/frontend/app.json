@@ -1,0 +1,72 @@
+{
+  "expo": {
+    "name": "SENTRIX",
+    "slug": "sentrix",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./src/assets/icon.png",
+    "scheme": "sentrix",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "backgroundColor": "#0f172a",
+      "resizeMode": "contain"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "pe.sentrix.app",
+      "config": {
+        "googleMapsApiKey": "${GOOGLE_MAPS_API_KEY}"
+      },
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "SENTRIX necesita tu ubicación para mostrarte zonas de riesgo cercanas.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "SENTRIX necesita tu ubicación en segundo plano para alertarte sobre zonas de riesgo.",
+        "UIBackgroundModes": ["location", "fetch"]
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0f172a"
+      },
+      "package": "pe.sentrix.app",
+      "config": {
+        "googleMaps": {
+          "apiKey": "${GOOGLE_MAPS_API_KEY}"
+        }
+      },
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE",
+        "POST_NOTIFICATIONS"
+      ]
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "SENTRIX necesita tu ubicación para mostrarte zonas de riesgo cercanas.",
+          "locationAlwaysPermission": "SENTRIX necesita tu ubicación en segundo plano para alertarte sobre zonas de riesgo."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./src/assets/notification-icon.png",
+          "color": "#ef4444"
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "SENTRIX necesita acceso a la cámara para adjuntar fotos a tus reportes."
+        }
+      ]
+    ],
+    "extra": {
+      "apiUrl": "${API_URL}"
+    }
+  }
+}
