@@ -1,18 +1,22 @@
 import { Tabs, router } from 'expo-router';
 import { Text, View, TouchableOpacity } from 'react-native';
 import { useAuthStore } from '@/store/authStore';
+import { MapPin, Bell, User } from '@/components/shared/Icons';
 
-const tabConfig = {
-  mapa: { icon: '📍', label: 'Mapa' },
-  alertas: { icon: '🔔', label: 'Alertas' },
-  perfil: { icon: '👤', label: 'Perfil' },
+type IconName = 'mapa' | 'alertas' | 'perfil';
+
+const tabConfig: Record<IconName, { icon: React.ReactNode; label: string }> = {
+  mapa: { icon: <MapPin size={22} />, label: 'Mapa' },
+  alertas: { icon: <Bell size={22} />, label: 'Alertas' },
+  perfil: { icon: <User size={22} />, label: 'Perfil' },
 };
 
 function TabIcon({ routeName, focused }: { routeName: string; focused: boolean }) {
-  const config = tabConfig[routeName as keyof typeof tabConfig];
+  const config = tabConfig[routeName as IconName];
+  if (!config) return <View />;
   return (
-    <View style={{ alignItems: 'center' }}>
-      <Text style={{ fontSize: focused ? 22 : 18 }}>{config?.icon || '●'}</Text>
+    <View style={{ alignItems: 'center', opacity: focused ? 1 : 0.6 }}>
+      {config.icon}
     </View>
   );
 }
@@ -57,7 +61,7 @@ export default function TabsLayout() {
                 paddingBottom: 4,
               }}
             >
-              <Text style={{ fontSize: 22 }}>{'👤'}</Text>
+              <User size={22} color="#747780" />
               <Text style={{ fontSize: 11, fontWeight: '500', color: '#747780', marginTop: 1 }}>Perfil</Text>
             </TouchableOpacity>
           ),

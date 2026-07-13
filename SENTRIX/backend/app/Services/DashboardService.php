@@ -96,7 +96,7 @@ class DashboardService
             'evolution'     => $this->getReportsByPeriod($period, $from, $to),
             'crime_types'   => $this->getCrimeTypeDistribution($filtersForStats),
             'zone_stats'    => $this->getZoneStatistics(),
-            'provinces'     => $this->getReportsByProvince(1),
+            'provinces'     => [],
         ];
     }
 

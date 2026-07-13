@@ -45,9 +45,7 @@ Route::prefix('v1')->group(function () {
     Route::get('ai/safe-route', [AIController::class, 'safeRoute']);
     Route::get('ai/critical-zones', [AIController::class, 'predictCriticalZones']);
 
-    // Reports (public read)
-    Route::get('reports', [ReportController::class, 'index']);
-    Route::get('reports/{id}', [ReportController::class, 'show']);
+    // Reports (public read — nearby only)
     Route::get('reports/nearby', [ReportController::class, 'nearby']);
 
     // Authenticated
@@ -65,7 +63,9 @@ Route::prefix('v1')->group(function () {
         Route::get('ai/predict-zone/{zoneId}', [AIController::class, 'predictRiskZone']);
         Route::get('ai/detect-false/{reportId}', [AIController::class, 'detectFalseReport']);
 
-        // Reports (write)
+        // Reports (auth)
+        Route::get('reports', [ReportController::class, 'index']);
+        Route::get('reports/{id}', [ReportController::class, 'show']);
         Route::post('reports', [ReportController::class, 'store']);
         Route::put('reports/{id}', [ReportController::class, 'update']);
         Route::delete('reports/{id}', [ReportController::class, 'destroy']);

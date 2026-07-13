@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { useAuthStore } from '@/store/authStore';
 import { useAuth } from '@/contexts/AuthContext';
 import { router } from 'expo-router';
+import { BarChart2, Inbox } from '@/components/shared/Icons';
 
 export default function ProfileScreen() {
   const user = useAuthStore((s) => s.user);
@@ -53,13 +54,13 @@ export default function ProfileScreen() {
               onPress={() => router.push('/(admin)/dashboard')}
               style={actionBtn}
             >
-              <Text style={actionText}>📊 Panel de Autoridades</Text>
+              <BarChart2 size={20} color="#03224d" /><Text style={actionText}> Panel de Autoridades</Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => router.push('/(admin)/etl')}
               style={actionBtn}
             >
-              <Text style={actionText}>📥 ETL — Importación</Text>
+              <Inbox size={20} color="#03224d" /><Text style={actionText}> ETL — Importación</Text>
             </TouchableOpacity>
           </>
         )}

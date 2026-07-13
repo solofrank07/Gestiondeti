@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl, TextInput } from 'react-native';
 import { useDashboardFull } from '@/hooks/useDashboard';
 import { router } from 'expo-router';
+import { Bell, Search, Clipboard, AlertTriangle, Clock, MapPin } from '@/components/shared/Icons';
 
 const PERIODS = [
   { key: 'week', label: '7d' },
@@ -50,7 +51,7 @@ export default function DashboardAuthorityScreen() {
           Alerta Piura
         </Text>
         <TouchableOpacity>
-          <Text style={{ fontSize: 22, color: '#747780' }}>🔔</Text>
+          <Bell size={22} color="#747780" />
         </TouchableOpacity>
       </View>
 
@@ -60,7 +61,7 @@ export default function DashboardAuthorityScreen() {
           flexDirection: 'row', alignItems: 'center', backgroundColor: '#ffffff',
           borderRadius: 12, borderWidth: 1, borderColor: '#e0e3e6', paddingHorizontal: 16,
         }}>
-          <Text style={{ fontSize: 18, marginRight: 8, color: '#747780' }}>🔍</Text>
+          <Search size={18} color="#747780" style={{ marginRight: 8 }} />
           <TextInput
             style={{ flex: 1, paddingVertical: 12, fontFamily: 'Inter', fontSize: 14, color: '#191c1e' }}
             placeholder="Buscar incidentes, zonas..."
@@ -74,26 +75,26 @@ export default function DashboardAuthorityScreen() {
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 20 }}>
           <View style={{ flex: 1, minWidth: '45%', backgroundColor: '#ffffff', borderRadius: 12, padding: 16, borderWidth: 1, borderColor: '#e0e3e6' }}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-              <Text style={{ fontSize: 20 }}>📋</Text>
+              <Clipboard size={20} />
               <Text style={{ fontFamily: 'Inter', fontSize: 11, color: '#375623', fontWeight: '600' }}>↑ 12%</Text>
             </View>
             <Text style={{ fontFamily: 'Inter', fontSize: 28, fontWeight: '700', color: '#191c1e' }}>{s?.total_reports || 0}</Text>
             <Text style={{ fontFamily: 'Inter', fontSize: 12, color: '#747780' }}>Reportes hoy</Text>
           </View>
           <View style={{ flex: 1, minWidth: '45%', backgroundColor: '#ffffff', borderRadius: 12, padding: 16, borderWidth: 1, borderColor: '#e0e3e6' }}>
-            <Text style={{ fontSize: 20, marginBottom: 8 }}>⚠️</Text>
+            <AlertTriangle size={20} style={{ marginBottom: 8 }} />
             <Text style={{ fontFamily: 'Inter', fontSize: 28, fontWeight: '700', color: '#191c1e' }}>{s?.pending_reports || 0}</Text>
             <Text style={{ fontFamily: 'Inter', fontSize: 12, color: '#747780' }}>Alertas activas (Alta Prioridad)</Text>
             <Text style={{ fontFamily: 'Inter', fontSize: 11, color: '#ef4444' }}>requieren atención</Text>
           </View>
           <View style={{ flex: 1, minWidth: '45%', backgroundColor: '#ffffff', borderRadius: 12, padding: 16, borderWidth: 1, borderColor: '#e0e3e6' }}>
-            <Text style={{ fontSize: 20, marginBottom: 8 }}>⏱️</Text>
+            <Clock size={20} style={{ marginBottom: 8 }} />
             <Text style={{ fontFamily: 'Inter', fontSize: 28, fontWeight: '700', color: '#191c1e' }}>0 min</Text>
             <Text style={{ fontFamily: 'Inter', fontSize: 12, color: '#747780' }}>Tiempo de respuesta prom.</Text>
             <Text style={{ fontFamily: 'Inter', fontSize: 11, color: '#375623' }}>↓ -2 min vs ayer</Text>
           </View>
           <View style={{ flex: 1, minWidth: '45%', backgroundColor: '#ffffff', borderRadius: 12, padding: 16, borderWidth: 1, borderColor: '#e0e3e6' }}>
-            <Text style={{ fontSize: 20, marginBottom: 8 }}>📍</Text>
+            <MapPin size={20} style={{ marginBottom: 8 }} />
             <Text style={{ fontFamily: 'Inter', fontSize: 28, fontWeight: '700', color: '#191c1e' }}>{s?.critical_zones?.length || 0}</Text>
             <Text style={{ fontFamily: 'Inter', fontSize: 12, color: '#747780' }}>Zonas críticas</Text>
             <Text style={{ fontFamily: 'Inter', fontSize: 11, color: '#ef4444' }}>focos detectados</Text>
@@ -121,7 +122,7 @@ export default function DashboardAuthorityScreen() {
             </View>
             <Text style={{ fontFamily: 'Inter', fontSize: 14, color: '#191c1e', marginBottom: 4 }}>{r.description}</Text>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-              <Text style={{ fontSize: 14, color: '#747780' }}>📍</Text>
+              <MapPin size={14} color="#747780" />
               <Text style={{ fontFamily: 'Inter', fontSize: 12, color: '#747780' }}>
                 {r.address || `${r.latitude?.toFixed(4)}, ${r.longitude?.toFixed(4)}`}
               </Text>

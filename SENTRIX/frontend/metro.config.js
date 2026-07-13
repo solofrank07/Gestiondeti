@@ -11,6 +11,12 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
       type: 'sourceFile',
     };
   }
+  if (platform === 'web' && moduleName.startsWith('react-native-svg')) {
+    return {
+      filePath: path.resolve(__dirname, 'src/mocks/react-native-svg.web.tsx'),
+      type: 'sourceFile',
+    };
+  }
   return context.resolveRequest(context, moduleName, platform);
 };
 

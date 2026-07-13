@@ -6,6 +6,7 @@ import * as yup from 'yup';
 import { useAuth } from '@/contexts/AuthContext';
 import { router } from 'expo-router';
 import { colors } from '@/constants/colors';
+import { Shield, Mail, Lock, Eye, EyeOff } from '@/components/shared/Icons';
 
 const schema = yup.object({
   email: yup.string().email('Email inválido').required('Email requerido'),
@@ -48,7 +49,7 @@ export default function LoginScreen() {
             backgroundColor: '#eef2f7', alignItems: 'center', justifyContent: 'center',
             marginBottom: 16,
           }}>
-            <Text style={{ fontSize: 36 }}>🛡️</Text>
+            <Shield size={36} />
           </View>
           <Text style={{
             fontSize: 24, fontWeight: '700', fontFamily: 'Inter',
@@ -78,7 +79,7 @@ export default function LoginScreen() {
           borderWidth: 1, borderColor: '#c4c6d0',
           paddingHorizontal: 16, marginBottom: 12,
         }}>
-          <Text style={{ fontSize: 20, marginRight: 12 }}>✉️</Text>
+          <Mail size={20} style={{ marginRight: 12 }} />
           <Controller control={control} name="email" render={({ field: { onChange, value } }) => (
             <TextInput
               style={{
@@ -103,7 +104,7 @@ export default function LoginScreen() {
           borderWidth: 1, borderColor: '#c4c6d0',
           paddingHorizontal: 16, marginBottom: 4,
         }}>
-          <Text style={{ fontSize: 20, marginRight: 12 }}>🔒</Text>
+          <Lock size={20} style={{ marginRight: 12 }} />
           <Controller control={control} name="password" render={({ field: { onChange, value } }) => (
             <TextInput
               style={{
@@ -118,7 +119,7 @@ export default function LoginScreen() {
             />
           )} />
           <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-            <Text style={{ fontSize: 18, color: '#747780' }}>{showPassword ? '🙈' : '👁️'}</Text>
+            {showPassword ? <EyeOff size={20} color="#747780" /> : <Eye size={20} color="#747780" />}
           </TouchableOpacity>
         </View>
         {errors.password && <Text style={{ color: '#ba1a1a', fontSize: 13, marginBottom: 8, fontFamily: 'Inter' }}>{errors.password.message}</Text>}

@@ -77,14 +77,14 @@ class ReportRepository extends BaseRepository implements ReportRepositoryInterfa
         if ($to) $query->whereDate('incident_date', '<=', $to);
 
         $format = match ($period) {
-            'week'   => '%Y-%u',
-            'month'  => '%Y-%m',
-            'year'   => '%Y',
-            default  => '%Y-%m-%d',
+            'week'   => 'IYYY-IW',
+            'month'  => 'YYYY-MM',
+            'year'   => 'YYYY',
+            default  => 'YYYY-MM-DD',
         };
 
         return $query
-            ->selectRaw("DATE_FORMAT(incident_date, '{$format}') as period, count(*) as total")
+            ->selectRaw("TO_CHAR(incident_date, '{$format}') as period, count(*) as total")
             ->whereNotNull('incident_date')
             ->groupBy('period')
             ->orderBy('period')
