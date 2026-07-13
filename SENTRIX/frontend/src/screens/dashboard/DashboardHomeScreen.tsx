@@ -37,7 +37,7 @@ export default function DashboardHomeScreen() {
   const evolutionData = useMemo(() => {
     if (!dashboard?.evolution?.length) return [];
     const items = dashboard.evolution.slice(-30);
-    return items.map((p) => ({
+    return items.map((p: { date?: string; period?: string; count: number }) => ({
       label: (p.date || p.period || '').slice(-5),
       value: p.count,
     }));
@@ -45,7 +45,7 @@ export default function DashboardHomeScreen() {
 
   const crimeData = useMemo(() => {
     if (!dashboard?.crime_types?.length) return [];
-    return dashboard.crime_types.slice(0, 8).map((c) => ({
+    return dashboard.crime_types.slice(0, 8).map((c: { name: string; total: number }) => ({
       label: c.name,
       value: c.total,
     }));
@@ -53,7 +53,7 @@ export default function DashboardHomeScreen() {
 
   const zoneLevelData = useMemo(() => {
     if (!dashboard?.zone_stats?.by_level?.length) return [];
-    return dashboard.zone_stats.by_level.map((z) => ({
+    return dashboard.zone_stats.by_level.map((z: { level: string; count: number }) => ({
       label: z.level,
       value: z.count,
       color: RISK_COLORS[z.level] || '#6b7280',
@@ -68,8 +68,8 @@ export default function DashboardHomeScreen() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 bg-gray-950 justify-center items-center">
-        <ActivityIndicator size="large" color="#22c55e" />
+      <View className="flex-1 bg-surface justify-center items-center">
+        <ActivityIndicator size="large" color="#03224d" />
       </View>
     );
   }
@@ -78,28 +78,28 @@ export default function DashboardHomeScreen() {
 
   return (
     <ScrollView
-      className="flex-1 bg-gray-950"
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#22c55e" />}
+      className="flex-1 bg-surface"
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#03224d" />}
     >
       <View className="px-4 pt-12 pb-8">
-        <Text className="text-2xl font-bold text-green-500 mb-6">Dashboard</Text>
+        <Text className="text-2xl font-bold text-sentrix-600 mb-6">Dashboard</Text>
 
         <View className="flex-row flex-wrap gap-3 mb-6">
-          <View className="bg-gray-900 p-4 rounded-xl flex-1 min-w-[45%]">
-            <Text className="text-gray-400 text-xs">Total Reportes</Text>
-            <Text className="text-white text-3xl font-bold">{s?.total_reports || 0}</Text>
+          <View className="bg-surface-card p-4 rounded-xl flex-1 min-w-[45%] shadow-sm border border-[#e0e3e6]">
+            <Text className="text-sentrix-400 text-xs">Total Reportes</Text>
+            <Text className="text-sentrix-900 text-3xl font-bold">{s?.total_reports || 0}</Text>
           </View>
-          <View className="bg-gray-900 p-4 rounded-xl flex-1 min-w-[45%]">
-            <Text className="text-gray-400 text-xs">Verificados</Text>
-            <Text className="text-green-500 text-3xl font-bold">{s?.verified_reports || 0}</Text>
+          <View className="bg-surface-card p-4 rounded-xl flex-1 min-w-[45%] shadow-sm border border-[#e0e3e6]">
+            <Text className="text-sentrix-400 text-xs">Verificados</Text>
+            <Text className="text-safe text-3xl font-bold">{s?.verified_reports || 0}</Text>
           </View>
-          <View className="bg-gray-900 p-4 rounded-xl flex-1 min-w-[45%]">
-            <Text className="text-gray-400 text-xs">Pendientes</Text>
-            <Text className="text-yellow-500 text-3xl font-bold">{s?.pending_reports || 0}</Text>
+          <View className="bg-surface-card p-4 rounded-xl flex-1 min-w-[45%] shadow-sm border border-[#e0e3e6]">
+            <Text className="text-sentrix-400 text-xs">Pendientes</Text>
+            <Text className="text-warning text-3xl font-bold">{s?.pending_reports || 0}</Text>
           </View>
-          <View className="bg-gray-900 p-4 rounded-xl flex-1 min-w-[45%]">
-            <Text className="text-gray-400 text-xs">Tasa Verif.</Text>
-            <Text className="text-blue-500 text-3xl font-bold">{s?.verification_rate || 0}%</Text>
+          <View className="bg-surface-card p-4 rounded-xl flex-1 min-w-[45%] shadow-sm border border-[#e0e3e6]">
+            <Text className="text-sentrix-400 text-xs">Tasa Verif.</Text>
+            <Text className="text-secondary text-3xl font-bold">{s?.verification_rate || 0}%</Text>
           </View>
         </View>
 
@@ -108,82 +108,82 @@ export default function DashboardHomeScreen() {
             <TouchableOpacity
               key={p.key}
               onPress={() => setPeriod(p.key)}
-              className={`px-4 py-2 rounded-lg ${period === p.key ? 'bg-green-600' : 'bg-gray-800'}`}
+              className={`px-4 py-2 rounded-xl ${period === p.key ? 'bg-sentrix-600' : 'bg-surface-container'}`}
             >
-              <Text className="text-white text-sm">{p.label}</Text>
+              <Text className={`text-sm ${period === p.key ? 'text-white' : 'text-sentrix-900'}`}>{p.label}</Text>
             </TouchableOpacity>
           ))}
         </View>
 
-        <View className="bg-gray-900 p-4 rounded-xl mb-4">
-          <Text className="text-white font-semibold mb-3">Evolución de Reportes</Text>
+        <View className="bg-surface-card p-4 rounded-xl mb-4 shadow-sm border border-[#e0e3e6]">
+          <Text className="text-sentrix-900 font-semibold mb-3">Evolución de Reportes</Text>
           {evolutionData.length > 0 ? (
             <LineChart data={evolutionData} height={100} />
           ) : (
-            <Text className="text-gray-500 text-sm">Sin datos en este período</Text>
+            <Text className="text-sentrix-400 text-sm">Sin datos en este período</Text>
           )}
         </View>
 
         {crimeData.length > 0 && (
-          <View className="bg-gray-900 p-4 rounded-xl mb-4">
-            <Text className="text-white font-semibold mb-3">Tipos de Delito</Text>
+          <View className="bg-surface-card p-4 rounded-xl mb-4 shadow-sm border border-[#e0e3e6]">
+            <Text className="text-sentrix-900 font-semibold mb-3">Tipos de Delito</Text>
             <BarChart data={crimeData} />
           </View>
         )}
 
         <View className="flex-row gap-3 mb-4">
-          <View className="bg-gray-900 p-4 rounded-xl flex-1">
-            <Text className="text-gray-400 text-xs">Zonas Activas</Text>
-            <Text className="text-white text-2xl font-bold">{dashboard?.zone_stats?.total_zones || 0}</Text>
+          <View className="bg-surface-card p-4 rounded-xl flex-1 shadow-sm border border-[#e0e3e6]">
+            <Text className="text-sentrix-400 text-xs">Zonas Activas</Text>
+            <Text className="text-sentrix-900 text-2xl font-bold">{dashboard?.zone_stats?.total_zones || 0}</Text>
           </View>
-          <View className="bg-gray-900 p-4 rounded-xl flex-1">
-            <Text className="text-gray-400 text-xs">Score Prom.</Text>
-            <Text className="text-orange-500 text-2xl font-bold">
+          <View className="bg-surface-card p-4 rounded-xl flex-1 shadow-sm border border-[#e0e3e6]">
+            <Text className="text-sentrix-400 text-xs">Score Prom.</Text>
+            <Text className="text-warning text-2xl font-bold">
               {dashboard?.zone_stats?.avg_risk_score?.toFixed(0) || 0}
             </Text>
           </View>
-          <View className="bg-gray-900 p-4 rounded-xl flex-1">
-            <Text className="text-gray-400 text-xs">Max Score</Text>
-            <Text className="text-red-500 text-2xl font-bold">
+          <View className="bg-surface-card p-4 rounded-xl flex-1 shadow-sm border border-[#e0e3e6]">
+            <Text className="text-sentrix-400 text-xs">Max Score</Text>
+            <Text className="text-risk-critical text-2xl font-bold">
               {dashboard?.zone_stats?.max_risk_score?.toFixed(0) || 0}
             </Text>
           </View>
         </View>
 
         {zoneLevelData.length > 0 && (
-          <View className="bg-gray-900 p-4 rounded-xl mb-4">
-            <Text className="text-white font-semibold mb-3">Zonas por Nivel</Text>
+          <View className="bg-surface-card p-4 rounded-xl mb-4 shadow-sm border border-[#e0e3e6]">
+            <Text className="text-sentrix-900 font-semibold mb-3">Zonas por Nivel</Text>
             <BarChart data={zoneLevelData} />
           </View>
         )}
 
         {dashboard?.provinces && dashboard.provinces.length > 0 && (
-          <View className="bg-gray-900 p-4 rounded-xl mb-4">
-            <Text className="text-white font-semibold mb-3">Reportes por Provincia</Text>
+          <View className="bg-surface-card p-4 rounded-xl mb-4 shadow-sm border border-[#e0e3e6]">
+            <Text className="text-sentrix-900 font-semibold mb-3">Reportes por Provincia</Text>
             <BarChart
-              data={dashboard.provinces.map((p) => ({ label: p.name, value: p.total }))}
+              data={dashboard.provinces.map((p: { name: string; total: number }) => ({ label: p.name, value: p.total }))}
             />
           </View>
         )}
 
-        <Text className="text-white font-semibold text-lg mb-3 mt-2">Zonas Críticas</Text>
+        <Text className="text-sentrix-900 font-semibold text-lg mb-3 mt-2">Zonas Críticas</Text>
         {s?.critical_zones?.length ? (
-          s.critical_zones.map((zone) => (
+          s.critical_zones.map((zone: { id: number; name: string; risk_score: number; level: string }) => (
             <TouchableOpacity
               key={zone.id}
-              className="bg-gray-900 p-4 rounded-xl mb-3 border border-gray-800"
+              className="bg-surface-card p-4 rounded-xl mb-3 border border-alert-subtle shadow-sm"
             >
               <View className="flex-row justify-between items-center">
-                <Text className="text-white font-medium flex-1">{zone.name}</Text>
-                <View className="bg-red-900/50 px-3 py-1 rounded-full">
-                  <Text className="text-red-500 font-bold">{zone.risk_score.toFixed(0)}</Text>
+                <Text className="text-sentrix-900 font-medium flex-1">{zone.name}</Text>
+                <View className="bg-alert-subtle px-3 py-1 rounded-full">
+                  <Text className="text-alert font-bold">{zone.risk_score.toFixed(0)}</Text>
                 </View>
               </View>
-              <Text className="text-gray-500 text-sm mt-1">{zone.level}</Text>
+              <Text className="text-sentrix-400 text-sm mt-1">{zone.level}</Text>
             </TouchableOpacity>
           ))
         ) : (
-          <Text className="text-gray-500 text-sm mb-6">No hay zonas críticas</Text>
+          <Text className="text-sentrix-400 text-sm mb-6">No hay zonas críticas</Text>
         )}
       </View>
     </ScrollView>

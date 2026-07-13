@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Tell NativeWind to use CSS-class dark mode instead of prefers-color-scheme media query */
+:root {
+  --css-interop-darkMode: class dark;
+}

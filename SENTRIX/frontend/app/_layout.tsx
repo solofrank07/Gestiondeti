@@ -1,15 +1,15 @@
-import React, { useEffect, useRef } from 'react';
+import '../src/global.css';
+import React, { useEffect } from 'react';
+import { Slot, router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AuthProvider, useAuth } from '@/contexts/AuthContext';
+import { AuthProvider } from '@/contexts/AuthContext';
 import { LocationProvider, useLocationContext } from '@/contexts/LocationContext';
-import AppNavigator from '@/navigation/AppNavigator';
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
 import { notificationService } from '@/services/notificationService';
 import { useGeofenceAuto, registerBackgroundTask } from '@/hooks/useGeofenceAuto';
 import { useAuthStore } from '@/store/authStore';
-import { router } from 'expo-router';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -32,15 +32,16 @@ function AppInitializer({ children }: { children: React.ReactNode }) {
   const { location } = useLocationContext();
 
   useEffect(() => {
-    notificationService.requestPermission();
+    // Notification permission requires user gesture on web; wrap safely
+    try { notificationService.requestPermission(); } catch {}
     registerBackgroundTask();
 
     const sub = notificationService.addNotificationResponseListener((response) => {
       const data = response.notification.request.content.data;
       if (data?.type === 'geofence' && data?.zone_id) {
-        router.push(`/map?zone=${data.zone_id}`);
+        router.push(`/(tabs)/mapa?zone=${data.zone_id}`);
       } else if (data?.type === 'panic') {
-        router.push('/panic');
+        router.push('/(tabs)/mapa');
       }
     });
 
@@ -56,27 +57,21 @@ function AppInitializer({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-function AppContent() {
-  return (
-    <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <LocationProvider>
-            <AppInitializer>
-              <AppNavigator />
-            </AppInitializer>
-            <StatusBar style="light" />
-          </LocationProvider>
-        </AuthProvider>
-      </QueryClientProvider>
-    </ErrorBoundary>
-  );
-}
-
-export default function App() {
+export default function RootLayout() {
   return (
     <SafeAreaProvider>
-      <AppContent />
+      <ErrorBoundary>
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <LocationProvider>
+              <AppInitializer>
+                <Slot />
+              </AppInitializer>
+              <StatusBar style="dark" />
+            </LocationProvider>
+          </AuthProvider>
+        </QueryClientProvider>
+      </ErrorBoundary>
     </SafeAreaProvider>
   );
 }

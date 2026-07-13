@@ -46,41 +46,41 @@ export default function CreateReportScreen() {
   };
 
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} className="flex-1 bg-gray-950">
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} className="flex-1 bg-surface">
       <ScrollView className="flex-1 px-4 pt-12">
-        <Text className="text-2xl font-bold text-green-500 mb-6">Reportar Incidente</Text>
+        <Text className="text-2xl font-bold text-sentrix-600 mb-6">Reportar Incidente</Text>
 
-        {success && <View className="bg-green-900/50 p-3 rounded-lg mb-4"><Text className="text-green-400">Reporte creado exitosamente.</Text></View>}
+        {success && <View className="bg-safe-subtle p-3 rounded-xl mb-4"><Text className="text-safe font-medium">Reporte creado exitosamente.</Text></View>}
 
         <Controller control={control} name="title" render={({ field: { onChange, value } }) => (
-          <TextInput className="bg-gray-900 text-white px-4 py-3 rounded-lg mb-1 border border-gray-800" placeholder="Título del reporte" placeholderTextColor="#6b7280" onChangeText={onChange} value={value} />
+          <TextInput className="bg-surface-card text-sentrix-900 px-4 py-3 rounded-xl mb-1 border border-[#c4c6d0]" placeholder="Título del reporte" placeholderTextColor="#747780" onChangeText={onChange} value={value} />
         )} />
-        {errors.title && <Text className="text-red-400 text-sm mb-2">{errors.title.message}</Text>}
+        {errors.title && <Text className="text-error text-sm mb-2">{errors.title.message}</Text>}
 
         <Controller control={control} name="description" render={({ field: { onChange, value } }) => (
-          <TextInput className="bg-gray-900 text-white px-4 py-3 rounded-lg mb-1 border border-gray-800" placeholder="Describe lo sucedido..." placeholderTextColor="#6b7280" multiline numberOfLines={4} onChangeText={onChange} value={value} textAlignVertical="top" />
+          <TextInput className="bg-surface-card text-sentrix-900 px-4 py-3 rounded-xl mb-1 border border-[#c4c6d0]" placeholder="Describe lo sucedido..." placeholderTextColor="#747780" multiline numberOfLines={4} onChangeText={onChange} value={value} textAlignVertical="top" />
         )} />
-        {errors.description && <Text className="text-red-400 text-sm mb-2">{errors.description.message}</Text>}
+        {errors.description && <Text className="text-error text-sm mb-2">{errors.description.message}</Text>}
 
         <Controller control={control} name="priority" render={({ field: { onChange, value } }) => (
           <View className="mb-4">
-            <Text className="text-gray-400 mb-2">Prioridad:</Text>
+            <Text className="text-sentrix-400 mb-2 font-medium">Prioridad:</Text>
             <View className="flex-row gap-2">
               {(['baja', 'media', 'alta', 'critica'] as const).map((p) => (
-                <TouchableOpacity key={p} className={`flex-1 py-2 rounded-lg ${value === p ? 'bg-green-600' : 'bg-gray-800'}`} onPress={() => onChange(p)}>
-                  <Text className="text-white text-center text-xs capitalize">{p}</Text>
+                <TouchableOpacity key={p} className={`flex-1 py-2 rounded-xl ${value === p ? 'bg-sentrix-600' : 'bg-surface-container'}`} onPress={() => onChange(p)}>
+                  <Text className={`text-center text-xs capitalize font-medium ${value === p ? 'text-white' : 'text-sentrix-900'}`}>{p}</Text>
                 </TouchableOpacity>
               ))}
             </View>
           </View>
         )} />
 
-        <TouchableOpacity className="bg-green-600 py-3 rounded-lg items-center mt-2" onPress={handleSubmit(onSubmit)} disabled={createMutation.isPending}>
+        <TouchableOpacity className="bg-sentrix-600 py-3 rounded-xl items-center mt-2" onPress={handleSubmit(onSubmit)} disabled={createMutation.isPending}>
           {createMutation.isPending ? <ActivityIndicator color="white" /> : <Text className="text-white font-semibold">Enviar Reporte</Text>}
         </TouchableOpacity>
 
         {location && (
-          <Text className="text-gray-500 text-xs text-center mt-4">
+          <Text className="text-sentrix-400 text-xs text-center mt-4">
             Ubicación: {location.coords.latitude.toFixed(4)}, {location.coords.longitude.toFixed(4)}
           </Text>
         )}

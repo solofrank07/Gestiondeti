@@ -13,7 +13,7 @@ interface BarChartProps {
   showValues?: boolean;
 }
 
-const COLORS = ['#22c55e', '#84cc16', '#eab308', '#f97316', '#ef4444', '#a855f7', '#3b82f6'];
+const COLORS = ['#03224d', '#1f3864', '#3b5ca3', '#92b2ff', '#c55a11', '#f98139', '#afc6fb'];
 
 export function BarChart({ data, maxBarWidth = 200, showValues = true }: BarChartProps) {
   if (!data.length) return null;
@@ -27,7 +27,7 @@ export function BarChart({ data, maxBarWidth = 200, showValues = true }: BarChar
         const color = item.color || COLORS[i % COLORS.length];
         return (
           <View key={i} className="flex-row items-center">
-            <Text className="text-gray-400 text-xs w-24 mr-2 text-right" numberOfLines={1}>
+            <Text className="text-sentrix-400 text-xs w-24 mr-2 text-right" numberOfLines={1}>
               {item.label}
             </Text>
             <View className="flex-row items-center flex-1">
@@ -41,7 +41,7 @@ export function BarChart({ data, maxBarWidth = 200, showValues = true }: BarChar
                 className="h-5"
               />
               {showValues && (
-                <Text className="text-gray-500 text-xs ml-2">{item.value}</Text>
+                <Text className="text-sentrix-400 text-xs ml-2">{item.value}</Text>
               )}
             </View>
           </View>

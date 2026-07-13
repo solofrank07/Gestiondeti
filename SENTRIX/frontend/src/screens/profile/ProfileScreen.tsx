@@ -1,52 +1,98 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { useAuthStore } from '@/store/authStore';
 import { useAuth } from '@/contexts/AuthContext';
+import { router } from 'expo-router';
 
 export default function ProfileScreen() {
   const user = useAuthStore((s) => s.user);
   const { logout } = useAuth();
 
   const handleLogout = () => {
-    Alert.alert('Cerrar sesión', '¿Estás seguro?', [
-      { text: 'Cancelar', style: 'cancel' },
-      { text: 'Salir', style: 'destructive', onPress: logout },
-    ]);
+    logout();
+    router.replace('/(auth)/login');
   };
 
   if (!user) return null;
 
   return (
-    <ScrollView className="flex-1 bg-gray-950 px-4 pt-12">
-      <View className="items-center mb-8">
-        <View className="w-20 h-20 bg-green-600 rounded-full items-center justify-center mb-4">
-          <Text className="text-3xl text-white font-bold">{user.name.charAt(0)}</Text>
+    <ScrollView style={{ flex: 1, backgroundColor: '#f7f9fc' }}>
+      {/* Header */}
+      <View style={{ paddingHorizontal: 20, paddingTop: 60, paddingBottom: 24 }}>
+        <Text style={{ fontSize: 22, fontWeight: '700', fontFamily: 'Inter', color: '#03224d' }}>Perfil</Text>
+      </View>
+
+      {/* Avatar & name */}
+      <View style={{ alignItems: 'center', marginBottom: 32 }}>
+        <View style={{
+          width: 72, height: 72, borderRadius: 36,
+          backgroundColor: '#03224d', alignItems: 'center', justifyContent: 'center',
+          marginBottom: 12,
+        }}>
+          <Text style={{ fontSize: 28, color: '#ffffff', fontWeight: '700' }}>{user.name.charAt(0)}</Text>
         </View>
-        <Text className="text-white text-xl font-bold">{user.name}</Text>
-        <Text className="text-gray-400">{user.email}</Text>
-        <View className="mt-2 px-3 py-1 bg-gray-800 rounded-full">
-          <Text className="text-green-400 text-sm">{user.roles?.map((r) => r.name).join(', ')}</Text>
+        <Text style={{ fontFamily: 'Inter', fontSize: 18, fontWeight: '700', color: '#191c1e' }}>{user.name}</Text>
+        <Text style={{ fontFamily: 'Inter', fontSize: 14, color: '#747780', marginTop: 2 }}>{user.email}</Text>
+        <View style={{ marginTop: 8, backgroundColor: '#eef2f7', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 4 }}>
+          <Text style={{ fontFamily: 'Inter', fontSize: 13, color: '#03224d', fontWeight: '500' }}>
+            {user.roles?.map((r: any) => r.name).join(', ')}
+          </Text>
         </View>
       </View>
 
-      <View className="bg-gray-900 rounded-xl p-4 mb-4">
-        <Text className="text-gray-400 text-sm">Teléfono</Text>
-        <Text className="text-white">{user.phone || '—'}</Text>
-      </View>
+      {/* Info cards */}
+      <View style={{ paddingHorizontal: 20 }}>
+        <InfoRow label="Teléfono" value={user.phone || '—'} />
+        <InfoRow label="Documento" value={`${user.document_type?.toUpperCase() || '—'}: ${user.document_number || '—'}`} />
+        <InfoRow label="Miembro desde" value={new Date(user.created_at).toLocaleDateString('es-PE')} />
 
-      <View className="bg-gray-900 rounded-xl p-4 mb-4">
-        <Text className="text-gray-400 text-sm">Documento</Text>
-        <Text className="text-white">{user.document_type?.toUpperCase() || '—'}: {user.document_number || '—'}</Text>
-      </View>
+        {/* Admin links */}
+        {user.roles?.some((r: any) => r.name === 'Administrador') && (
+          <>
+            <TouchableOpacity
+              onPress={() => router.push('/(admin)/dashboard')}
+              style={actionBtn}
+            >
+              <Text style={actionText}>📊 Panel de Autoridades</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => router.push('/(admin)/etl')}
+              style={actionBtn}
+            >
+              <Text style={actionText}>📥 ETL — Importación</Text>
+            </TouchableOpacity>
+          </>
+        )}
 
-      <View className="bg-gray-900 rounded-xl p-4 mb-8">
-        <Text className="text-gray-400 text-sm">Miembro desde</Text>
-        <Text className="text-white">{new Date(user.created_at).toLocaleDateString('es-PE')}</Text>
+        {/* Logout */}
+        <TouchableOpacity
+          onPress={handleLogout}
+          style={{
+            backgroundColor: '#ffdad6', borderRadius: 12,
+            paddingVertical: 14, alignItems: 'center', marginTop: 16, marginBottom: 40,
+          }}
+        >
+          <Text style={{ fontFamily: 'Inter', fontSize: 15, color: '#ba1a1a', fontWeight: '600' }}>Cerrar sesión</Text>
+        </TouchableOpacity>
       </View>
-
-      <TouchableOpacity className="bg-red-600/20 border border-red-800 py-3 rounded-lg items-center" onPress={handleLogout}>
-        <Text className="text-red-500 font-semibold">Cerrar sesión</Text>
-      </TouchableOpacity>
     </ScrollView>
   );
 }
+
+function InfoRow({ label, value }: { label: string; value: string }) {
+  return (
+    <View style={{
+      backgroundColor: '#ffffff', borderRadius: 12, borderWidth: 1, borderColor: '#e0e3e6',
+      padding: 16, marginBottom: 8,
+    }}>
+      <Text style={{ fontFamily: 'Inter', fontSize: 13, color: '#747780', marginBottom: 2 }}>{label}</Text>
+      <Text style={{ fontFamily: 'Inter', fontSize: 15, color: '#191c1e' }}>{value}</Text>
+    </View>
+  );
+}
+
+const actionBtn: any = {
+  backgroundColor: '#ffffff', borderRadius: 12, borderWidth: 1, borderColor: '#e0e3e6',
+  padding: 16, marginBottom: 8, flexDirection: 'row', alignItems: 'center', gap: 8,
+};
+const actionText: any = { fontFamily: 'Inter', fontSize: 15, color: '#03224d', fontWeight: '500' };

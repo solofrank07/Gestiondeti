@@ -18,7 +18,7 @@ return new class extends Migration
         });
 
         Schema::table('users', function (Blueprint $table) {
-            $table->json('last_geofence_state')->nullable()->after('last_login_at')
+            $table->json('last_geofence_state')->nullable()->after('last_active_at')
                 ->comment('{zone_id: {status: inside|outside, entered_at, last_notified_at}}');
         });
     }

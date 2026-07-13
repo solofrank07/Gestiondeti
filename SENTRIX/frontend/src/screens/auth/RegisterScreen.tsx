@@ -4,6 +4,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useAuth } from '@/contexts/AuthContext';
+import { router } from 'expo-router';
 
 const schema = yup.object({
   name: yup.string().required('Nombre requerido'),
@@ -13,6 +14,11 @@ const schema = yup.object({
 });
 
 type RegisterForm = yup.InferType<typeof schema>;
+
+const inputStyle = {
+  backgroundColor: '#ffffff', borderRadius: 12, borderWidth: 1, borderColor: '#c4c6d0',
+  paddingHorizontal: 16, paddingVertical: 14, fontSize: 15, fontFamily: 'Inter', color: '#191c1e', marginBottom: 4,
+};
 
 export default function RegisterScreen() {
   const { register } = useAuth();
@@ -37,34 +43,52 @@ export default function RegisterScreen() {
   };
 
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} className="flex-1 bg-gray-950">
-      <ScrollView className="flex-1 px-6 pt-20">
-        <Text className="text-3xl font-bold text-green-500 mb-8 text-center">Crear Cuenta</Text>
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1, backgroundColor: '#f7f9fc' }}>
+      <ScrollView contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 60, paddingBottom: 40 }}>
+        <TouchableOpacity onPress={() => router.back()} style={{ marginBottom: 24 }}>
+          <Text style={{ fontSize: 24 }}>←</Text>
+        </TouchableOpacity>
 
-        {error && <Text className="text-red-500 text-center mb-4">{error}</Text>}
+        <Text style={{ fontSize: 24, fontWeight: '700', fontFamily: 'Inter', color: '#03224d', marginBottom: 8 }}>
+          Crear cuenta nueva
+        </Text>
+        <Text style={{ fontSize: 15, fontFamily: 'Inter', color: '#44474f', marginBottom: 32, lineHeight: 22 }}>
+          Únete a Alerta Piura para reportar incidentes y recibir alertas de seguridad.
+        </Text>
+
+        {error && <Text style={{ color: '#ba1a1a', textAlign: 'center', marginBottom: 16, fontFamily: 'Inter' }}>{error}</Text>}
 
         <Controller control={control} name="name" render={({ field: { onChange, value } }) => (
-          <TextInput className="bg-gray-900 text-white px-4 py-3 rounded-lg mb-1 border border-gray-800" placeholder="Nombre completo" placeholderTextColor="#6b7280" onChangeText={onChange} value={value} />
+          <TextInput style={inputStyle} placeholder="Nombre completo" placeholderTextColor="#747780" onChangeText={onChange} value={value} />
         )} />
-        {errors.name && <Text className="text-red-400 text-sm mb-2">{errors.name.message}</Text>}
+        {errors.name && <Text style={{ color: '#ba1a1a', fontSize: 13, marginBottom: 8 }}>{errors.name.message}</Text>}
 
         <Controller control={control} name="email" render={({ field: { onChange, value } }) => (
-          <TextInput className="bg-gray-900 text-white px-4 py-3 rounded-lg mb-1 border border-gray-800" placeholder="Correo electrónico" placeholderTextColor="#6b7280" autoCapitalize="none" keyboardType="email-address" onChangeText={onChange} value={value} />
+          <TextInput style={inputStyle} placeholder="Correo electrónico" placeholderTextColor="#747780" autoCapitalize="none" keyboardType="email-address" onChangeText={onChange} value={value} />
         )} />
-        {errors.email && <Text className="text-red-400 text-sm mb-2">{errors.email.message}</Text>}
+        {errors.email && <Text style={{ color: '#ba1a1a', fontSize: 13, marginBottom: 8 }}>{errors.email.message}</Text>}
 
         <Controller control={control} name="password" render={({ field: { onChange, value } }) => (
-          <TextInput className="bg-gray-900 text-white px-4 py-3 rounded-lg mb-1 border border-gray-800" placeholder="Contraseña" placeholderTextColor="#6b7280" secureTextEntry onChangeText={onChange} value={value} />
+          <TextInput style={inputStyle} placeholder="Contraseña" placeholderTextColor="#747780" secureTextEntry onChangeText={onChange} value={value} />
         )} />
-        {errors.password && <Text className="text-red-400 text-sm mb-2">{errors.password.message}</Text>}
+        {errors.password && <Text style={{ color: '#ba1a1a', fontSize: 13, marginBottom: 8 }}>{errors.password.message}</Text>}
 
         <Controller control={control} name="password_confirmation" render={({ field: { onChange, value } }) => (
-          <TextInput className="bg-gray-900 text-white px-4 py-3 rounded-lg mb-1 border border-gray-800" placeholder="Confirmar contraseña" placeholderTextColor="#6b7280" secureTextEntry onChangeText={onChange} value={value} />
+          <TextInput style={inputStyle} placeholder="Confirmar contraseña" placeholderTextColor="#747780" secureTextEntry onChangeText={onChange} value={value} />
         )} />
-        {errors.password_confirmation && <Text className="text-red-400 text-sm mb-2">{errors.password_confirmation.message}</Text>}
+        {errors.password_confirmation && <Text style={{ color: '#ba1a1a', fontSize: 13, marginBottom: 24 }}>{errors.password_confirmation.message}</Text>}
 
-        <TouchableOpacity className="bg-green-600 py-3 rounded-lg items-center mt-4" onPress={handleSubmit(onSubmit)} disabled={loading}>
-          {loading ? <ActivityIndicator color="white" /> : <Text className="text-white font-semibold text-lg">Registrarse</Text>}
+        <TouchableOpacity
+          onPress={handleSubmit(onSubmit)} disabled={loading}
+          style={{ backgroundColor: '#03224d', paddingVertical: 14, borderRadius: 12, alignItems: 'center', marginBottom: 16 }}
+        >
+          {loading ? <ActivityIndicator color="white" /> : <Text style={{ color: '#ffffff', fontFamily: 'Inter', fontSize: 16, fontWeight: '600' }}>Crear cuenta</Text>}
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => router.push('/(auth)/login')} style={{ alignItems: 'center' }}>
+          <Text style={{ fontFamily: 'Inter', fontSize: 14, color: '#44474f' }}>
+            ¿Ya tienes cuenta? <Text style={{ color: '#03224d', fontWeight: '600' }}>Inicia sesión</Text>
+          </Text>
         </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>

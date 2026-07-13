@@ -41,10 +41,11 @@ export default function ETLScreen() {
       } as any);
 
       const response = await adminService.importCsv(formData);
+      const skipped = (response as any).skipped;
       Alert.alert(
         'Importación completada',
         `Importados: ${response.imported}\nErrores: ${response.errors?.length || 0}` +
-          (response.skipped ? `\nOmitidos: ${response.skipped}` : '')
+          (skipped ? `\nOmitidos: ${skipped}` : '')
       );
       queryClient.invalidateQueries({ queryKey: ['etl-history'] });
     } catch (e: any) {
@@ -74,15 +75,15 @@ export default function ETLScreen() {
   const importedTotal = history?.reduce((s: number, i: any) => s + (i.imported_count || 0), 0) || 0;
 
   return (
-    <ScrollView className="flex-1 bg-gray-950 px-4 pt-12">
-      <Text className="text-2xl font-bold text-green-500 mb-6">ETL — Importación</Text>
+    <ScrollView className="flex-1 bg-surface px-4 pt-12">
+      <Text className="text-2xl font-bold text-sentrix-600 mb-6">ETL — Importación</Text>
 
-      <View className="bg-gray-900 p-4 rounded-xl mb-4">
-        <Text className="text-white font-semibold mb-3">Importar CSV</Text>
+      <View className="bg-surface-card p-4 rounded-xl mb-4 shadow-sm border border-[#e0e3e6]">
+        <Text className="text-sentrix-900 font-semibold mb-3">Importar CSV</Text>
         <TouchableOpacity
           onPress={handleUpload}
           disabled={uploading}
-          className="bg-green-600 p-3 rounded-xl items-center"
+          className="bg-sentrix-600 p-3 rounded-xl items-center"
         >
           {uploading ? (
             <ActivityIndicator color="#fff" />
@@ -92,66 +93,66 @@ export default function ETLScreen() {
             </Text>
           )}
         </TouchableOpacity>
-        <Text className="text-gray-500 text-xs mt-2">
+        <Text className="text-sentrix-400 text-xs mt-2">
           Formatos: CSV, TXT | Max: 10MB | Columnas: título, latitud, longitud, fecha
         </Text>
       </View>
 
-      <View className="bg-gray-900 p-4 rounded-xl mb-4">
-        <Text className="text-white font-semibold mb-3">Sincronizar fuentes externas</Text>
+      <View className="bg-surface-card p-4 rounded-xl mb-4 shadow-sm border border-[#e0e3e6]">
+        <Text className="text-sentrix-900 font-semibold mb-3">Sincronizar fuentes externas</Text>
         {SOURCES.map((source) => (
           <View key={source.key} className="flex-row items-center justify-between mb-2">
-            <Text className="text-gray-300">{source.label}</Text>
+            <Text className="text-sentrix-900">{source.label}</Text>
             <TouchableOpacity
               onPress={() => handleFetch(source.key)}
               disabled={fetchingSource === source.key}
-              className="bg-blue-600 px-4 py-2 rounded-lg"
+              className="bg-sentrix-600 px-4 py-2 rounded-xl"
             >
               {fetchingSource === source.key ? (
                 <ActivityIndicator size="small" color="#fff" />
               ) : (
-                <Text className="text-white text-sm">Sincronizar</Text>
+                <Text className="text-white text-sm font-medium">Sincronizar</Text>
               )}
             </TouchableOpacity>
           </View>
         ))}
       </View>
 
-      <View className="bg-gray-900 p-4 rounded-xl mb-4">
-        <Text className="text-white font-semibold mb-1">Total importado</Text>
-        <Text className="text-3xl font-bold text-green-500 mb-3">{importedTotal}</Text>
+      <View className="bg-surface-card p-4 rounded-xl mb-4 shadow-sm border border-[#e0e3e6]">
+        <Text className="text-sentrix-400 text-sm font-medium mb-1">Total importado</Text>
+        <Text className="text-3xl font-bold text-sentrix-600 mb-3">{importedTotal}</Text>
       </View>
 
-      <Text className="text-white font-semibold text-lg mb-3">Historial</Text>
+      <Text className="text-sentrix-900 font-semibold text-lg mb-3">Historial</Text>
       {isLoading ? (
-        <ActivityIndicator color="#22c55e" className="my-10" />
+        <ActivityIndicator color="#03224d" className="my-10" />
       ) : history?.length === 0 ? (
-        <Text className="text-gray-500 text-center my-10">Sin importaciones aún</Text>
+        <Text className="text-sentrix-400 text-center my-10">Sin importaciones aún</Text>
       ) : (
         history?.map((imp: any) => (
-          <View key={imp.id} className="bg-gray-900 p-4 rounded-xl mb-3 border border-gray-800">
+          <View key={imp.id} className="bg-surface-card p-4 rounded-xl mb-3 border border-[#e0e3e6] shadow-sm">
             <View className="flex-row justify-between items-center mb-1">
-              <Text className="text-white font-medium">{imp.source}</Text>
+              <Text className="text-sentrix-900 font-medium">{imp.source}</Text>
               <View
-                className="px-2 py-1 rounded"
-                style={{ backgroundColor: (STATUS_COLORS[imp.status] || '#6b7280') + '30' }}
+                className="px-2 py-1 rounded-lg"
+                style={{ backgroundColor: (STATUS_COLORS[imp.status] || '#747780') + '30' }}
               >
-                <Text style={{ color: STATUS_COLORS[imp.status] || '#6b7280' }} className="text-xs">
+                <Text style={{ color: STATUS_COLORS[imp.status] || '#747780' }} className="text-xs font-medium">
                   {imp.status}
                 </Text>
               </View>
             </View>
             <View className="flex-row gap-3 mt-1">
-              <Text className="text-gray-500 text-xs">Filas: {imp.total_rows || 0}</Text>
-              <Text className="text-green-500 text-xs">OK: {imp.imported_count || 0}</Text>
+              <Text className="text-sentrix-400 text-xs">Filas: {imp.total_rows || 0}</Text>
+              <Text className="text-safe text-xs font-medium">OK: {imp.imported_count || 0}</Text>
               {(imp.error_count || 0) > 0 && (
-                <Text className="text-red-500 text-xs">Err: {imp.error_count}</Text>
+                <Text className="text-risk-critical text-xs font-medium">Err: {imp.error_count}</Text>
               )}
               {(imp.skipped_count || 0) > 0 && (
-                <Text className="text-yellow-500 text-xs">Skip: {imp.skipped_count}</Text>
+                <Text className="text-warning text-xs font-medium">Skip: {imp.skipped_count}</Text>
               )}
             </View>
-            <Text className="text-gray-600 text-xs mt-1">
+            <Text className="text-sentrix-400 text-xs mt-1">
               {imp.created_at ? new Date(imp.created_at).toLocaleString('es-PE') : ''}
             </Text>
           </View>

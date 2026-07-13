@@ -5,6 +5,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import api from '@/services/api';
 import { ENDPOINTS } from '@/constants/api';
+import { router } from 'expo-router';
 
 const schema = yup.object({ email: yup.string().email('Email inválido').required('Email requerido') });
 type Form = yup.InferType<typeof schema>;
@@ -33,19 +34,46 @@ export default function ForgotPasswordScreen() {
   };
 
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} className="flex-1 bg-gray-950 justify-center px-6">
-      <Text className="text-3xl font-bold text-green-500 mb-4 text-center">Recuperar Contraseña</Text>
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1, backgroundColor: '#f7f9fc', paddingHorizontal: 24 }}>
+      <TouchableOpacity onPress={() => router.back()} style={{ marginTop: 60, marginBottom: 24 }}>
+        <Text style={{ fontSize: 24 }}>←</Text>
+      </TouchableOpacity>
+
+      <Text style={{ fontSize: 24, fontWeight: '700', fontFamily: 'Inter', color: '#03224d', marginBottom: 8 }}>
+        Recuperar contraseña
+      </Text>
+      <Text style={{ fontSize: 15, fontFamily: 'Inter', color: '#44474f', marginBottom: 32, lineHeight: 22 }}>
+        Te enviaremos un enlace para restablecer tu contraseña.
+      </Text>
+
       {sent ? (
-        <Text className="text-gray-300 text-center">Si el email existe, recibirás un enlace para restablecer tu contraseña.</Text>
+        <View style={{ alignItems: 'center', marginTop: 40 }}>
+          <Text style={{ fontSize: 48, marginBottom: 16 }}>📧</Text>
+          <Text style={{ fontFamily: 'Inter', fontSize: 15, color: '#44474f', textAlign: 'center', lineHeight: 22 }}>
+            Si el email existe, recibirás un enlace para restablecer tu contraseña.
+          </Text>
+        </View>
       ) : (
         <>
-          {error && <Text className="text-red-500 text-center mb-4">{error}</Text>}
+          {error && <Text style={{ color: '#ba1a1a', textAlign: 'center', marginBottom: 16 }}>{error}</Text>}
           <Controller control={control} name="email" render={({ field: { onChange, value } }) => (
-            <TextInput className="bg-gray-900 text-white px-4 py-3 rounded-lg mb-3 border border-gray-800" placeholder="Correo electrónico" placeholderTextColor="#6b7280" autoCapitalize="none" keyboardType="email-address" onChangeText={onChange} value={value} />
+            <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#ffffff', borderRadius: 12, borderWidth: 1, borderColor: '#c4c6d0', paddingHorizontal: 16, marginBottom: 4 }}>
+              <Text style={{ fontSize: 20, marginRight: 12 }}>✉️</Text>
+              <TextInput
+                style={{ flex: 1, paddingVertical: 14, fontSize: 15, fontFamily: 'Inter', color: '#191c1e' }}
+                placeholder="Correo electrónico" placeholderTextColor="#747780"
+                autoCapitalize="none" keyboardType="email-address"
+                onChangeText={onChange} value={value}
+              />
+            </View>
           )} />
-          {errors.email && <Text className="text-red-400 text-sm mb-2">{errors.email.message}</Text>}
-          <TouchableOpacity className="bg-green-600 py-3 rounded-lg items-center" onPress={handleSubmit(onSubmit)} disabled={loading}>
-            {loading ? <ActivityIndicator color="white" /> : <Text className="text-white font-semibold">Enviar enlace</Text>}
+          {errors.email && <Text style={{ color: '#ba1a1a', fontSize: 13, marginBottom: 24 }}>{errors.email.message}</Text>}
+
+          <TouchableOpacity
+            onPress={handleSubmit(onSubmit)} disabled={loading}
+            style={{ backgroundColor: '#03224d', paddingVertical: 14, borderRadius: 12, alignItems: 'center', marginTop: 16 }}
+          >
+            {loading ? <ActivityIndicator color="white" /> : <Text style={{ color: '#ffffff', fontFamily: 'Inter', fontSize: 16, fontWeight: '600' }}>Enviar enlace</Text>}
           </TouchableOpacity>
         </>
       )}

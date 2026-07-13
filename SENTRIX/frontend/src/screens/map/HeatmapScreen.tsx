@@ -34,9 +34,8 @@ export default function HeatmapScreen() {
   const { heatmapData, setBounds, bounds, clusters, setClusters } = useMapStore();
 
   const [region, setRegion] = useState<Region>(() => ({
-    latitude: location?.coords.latitude || DEFAULT_REGION.latitude,
-    longitude: location?.coords.longitude || DEFAULT_REGION.longitude,
     ...DEFAULT_REGION,
+    ...(location?.coords ? { latitude: location.coords.latitude, longitude: location.coords.longitude } : {}),
   }));
   const [zoom, setZoom] = useState(10);
   const [opacity, setOpacity] = useState(0.7);
@@ -85,7 +84,7 @@ export default function HeatmapScreen() {
   }, [heatmapData, showClusters]);
 
   return (
-    <View className="flex-1 bg-gray-950">
+    <View className="flex-1 bg-surface">
       <MapView
         ref={mapRef}
         className="flex-1"
@@ -107,75 +106,75 @@ export default function HeatmapScreen() {
       </MapView>
 
       {isLoading && (
-        <View className="absolute top-4 right-4 bg-gray-900/80 rounded-full p-2">
-          <ActivityIndicator size="small" color="#22c55e" />
+        <View className="absolute top-4 right-4 bg-white/90 rounded-full p-2 shadow-sm">
+          <ActivityIndicator size="small" color="#03224d" />
         </View>
       )}
 
       <View className="absolute top-4 left-4 flex-row gap-2">
         <TouchableOpacity
           onPress={() => setShowLegend(!showLegend)}
-          className="bg-gray-900/80 px-3 py-2 rounded-lg"
+          className="bg-white/90 px-3 py-2 rounded-xl shadow-sm"
         >
-          <Text className="text-white text-xs">Leyenda</Text>
+          <Text className="text-sentrix-600 text-xs font-medium">Leyenda</Text>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => mapRef.current?.animateToRegion(DEFAULT_REGION, 500)}
-          className="bg-gray-900/80 px-3 py-2 rounded-lg"
+          className="bg-white/90 px-3 py-2 rounded-xl shadow-sm"
         >
-          <Text className="text-white text-xs">⋮</Text>
+          <Text className="text-sentrix-600 text-xs font-medium">⋮</Text>
         </TouchableOpacity>
       </View>
 
       {showLegend && (
-        <View className="absolute bottom-6 left-3 right-3 bg-gray-900/95 rounded-xl p-4 border border-gray-800">
-          <Text className="text-white font-bold mb-3">Niveles de Riesgo</Text>
+        <View className="absolute bottom-6 left-3 right-3 bg-white/95 rounded-xl p-4 border border-[#e0e3e6] shadow-md">
+          <Text className="text-sentrix-900 font-bold mb-3">Niveles de Riesgo</Text>
           <View className="flex-row justify-between mb-3">
             {RISK_LEVELS.map((item) => (
               <View key={item.label} className="items-center flex-1">
                 <View className="w-8 h-3 rounded-sm mb-1" style={{ backgroundColor: item.color }} />
-                <Text className="text-gray-400 text-[10px]">{item.label}</Text>
+                <Text className="text-sentrix-400 text-[10px]">{item.label}</Text>
               </View>
             ))}
           </View>
 
           <View className="flex-row items-center justify-between mb-2">
-            <Text className="text-gray-400 text-xs">Opacidad</Text>
+            <Text className="text-sentrix-400 text-xs">Opacidad</Text>
             <View className="flex-row gap-2">
               {[0.3, 0.5, 0.7, 0.9].map((v) => (
                 <TouchableOpacity
                   key={v}
                   onPress={() => setOpacity(v)}
-                  className={`px-3 py-1 rounded ${opacity === v ? 'bg-green-600' : 'bg-gray-800'}`}
+                  className={`px-3 py-1 rounded-xl ${opacity === v ? 'bg-sentrix-600' : 'bg-surface-container'}`}
                 >
-                  <Text className="text-white text-xs">{Math.round(v * 100)}%</Text>
+                  <Text className={`text-xs ${opacity === v ? 'text-white' : 'text-sentrix-900'}`}>{Math.round(v * 100)}%</Text>
                 </TouchableOpacity>
               ))}
             </View>
           </View>
 
           <View className="flex-row items-center justify-between mb-2">
-            <Text className="text-gray-400 text-xs">Radio</Text>
+            <Text className="text-sentrix-400 text-xs">Radio</Text>
             <View className="flex-row gap-2">
               {[20, 30, 40, 50, 60].map((v) => (
                 <TouchableOpacity
                   key={v}
                   onPress={() => setHeatmapRadius(v)}
-                  className={`px-3 py-1 rounded ${heatmapRadius === v ? 'bg-green-600' : 'bg-gray-800'}`}
+                  className={`px-3 py-1 rounded-xl ${heatmapRadius === v ? 'bg-sentrix-600' : 'bg-surface-container'}`}
                 >
-                  <Text className="text-white text-xs">{v}</Text>
+                  <Text className={`text-xs ${heatmapRadius === v ? 'text-white' : 'text-sentrix-900'}`}>{v}</Text>
                 </TouchableOpacity>
               ))}
             </View>
           </View>
 
           <View className="flex-row items-center justify-between">
-            <Text className="text-gray-400 text-xs">Clusters</Text>
+            <Text className="text-sentrix-400 text-xs">Clusters</Text>
             <Switch
               value={showClusters}
               onValueChange={setShowClusters}
-              trackColor={{ false: '#374151', true: '#22c55e' }}
-              thumbColor="#fff"
+              trackColor={{ false: '#c4c6d0', true: '#afc6fb' }}
+              thumbColor="#03224d"
             />
           </View>
         </View>

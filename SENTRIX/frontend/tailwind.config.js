@@ -6,16 +6,16 @@ module.exports = {
     extend: {
       colors: {
         sentrix: {
-          50: '#f0fdf4',
-          100: '#dcfce7',
-          200: '#bbf7d0',
-          300: '#86efac',
-          400: '#4ade80',
-          500: '#22c55e',
-          600: '#16a34a',
-          700: '#15803d',
-          800: '#166534',
-          900: '#14532d',
+          50: '#eef2f7',
+          100: '#d8e2ff',
+          200: '#afc6fb',
+          300: '#8ba2d5',
+          400: '#475e8c',
+          500: '#1f3864',
+          600: '#03224d',
+          700: '#001a41',
+          800: '#00102b',
+          900: '#000814',
         },
         risk: {
           low: '#22c55e',
@@ -23,9 +23,30 @@ module.exports = {
           high: '#f97316',
           critical: '#ef4444',
         },
+        alert: {
+          DEFAULT: '#c55a11',
+          light: '#f98139',
+          subtle: '#FCE4D6',
+        },
+        safe: {
+          DEFAULT: '#375623',
+          subtle: '#E2EFDA',
+        },
+        surface: {
+          DEFAULT: '#f7f9fc',
+          card: '#ffffff',
+          dim: '#d8dadd',
+          blue: '#D9E2F3',
+          container: '#eceef1',
+        },
       },
       fontFamily: {
+        sans: ['Inter', 'system-ui'],
         mono: ['monospace'],
+      },
+      borderRadius: {
+        DEFAULT: '0.75rem',
+        '2xl': '1.25rem',
       },
     },
   },

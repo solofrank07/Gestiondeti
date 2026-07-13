@@ -27,7 +27,7 @@ function haversine(
   return R * 2 * Math.atan2(Math.sqrt(a2), Math.sqrt(1 - a2));
 }
 
-async function sendGeofenceNotifications(result: GeofenceCheckResult) {
+async function sendGeofenceNotifications(result: { total_alerts: number; alerts: Array<{ zone_id: number; risk_level: string; zone_name: string; risk_score: number }> }) {
   if (!result || result.total_alerts === 0) return;
 
   for (const alert of result.alerts) {
@@ -48,19 +48,23 @@ async function sendGeofenceNotifications(result: GeofenceCheckResult) {
   }
 }
 
-TaskManager.defineTask(GEOFENCE_TASK, async ({ data, error }) => {
-  if (error) return;
-  const { locations } = data as { locations: Location.LocationObject[] };
-  if (!locations?.length) return;
+if (Platform.OS !== 'web') {
+  TaskManager.defineTask(GEOFENCE_TASK, async ({ data, error }) => {
+    if (error) return;
+    const { locations } = data as { locations: Location.LocationObject[] };
+    if (!locations?.length) return;
 
-  const { latitude, longitude } = locations[0].coords;
-  try {
-    const result = await geofenceService.checkProximity(latitude, longitude);
-    await sendGeofenceNotifications(result);
-  } catch {}
-});
+    const { latitude, longitude } = locations[0].coords;
+    try {
+      const result = await geofenceService.checkProximity(latitude, longitude);
+      await sendGeofenceNotifications(result);
+    } catch {}
+  });
+}
 
 export async function registerBackgroundTask() {
+  if (Platform.OS === 'web') return;
+
   const hasStarted = await TaskManager.isTaskRegisteredAsync(GEOFENCE_TASK);
   if (hasStarted) return;
 

@@ -1,12 +1,32 @@
 import { create } from 'zustand';
 import { Report } from '@/types/report';
 
+interface DraftReport {
+  lat?: number;
+  lng?: number;
+  address?: string;
+  isAnonymous: boolean;
+  crimeType?: string;
+  description?: string;
+  evidence?: string[];
+}
+
 interface ReportState {
   reports: Report[];
   selectedReport: Report | null;
   totalPages: number;
   currentPage: number;
   isLoading: boolean;
+  // Draft for create flow
+  draft: DraftReport;
+  setLocation: (loc: { lat: number; lng: number }) => void;
+  setAddress: (addr: string) => void;
+  setAnonymous: (val: boolean) => void;
+  setCrimeType: (type: string) => void;
+  setDescription: (desc: string) => void;
+  addEvidence: (uri: string) => void;
+  resetDraft: () => void;
+  // Existing
   setReports: (reports: Report[]) => void;
   addReport: (report: Report) => void;
   updateReport: (id: number, data: Partial<Report>) => void;
@@ -18,12 +38,25 @@ interface ReportState {
   clear: () => void;
 }
 
+const defaultDraft: DraftReport = {
+  isAnonymous: false,
+};
+
 export const useReportStore = create<ReportState>((set) => ({
   reports: [],
   selectedReport: null,
   totalPages: 1,
   currentPage: 1,
   isLoading: false,
+  draft: { ...defaultDraft },
+  setLocation: (loc) => set((s) => ({ draft: { ...s.draft, lat: loc.lat, lng: loc.lng } })),
+  setAddress: (address) => set((s) => ({ draft: { ...s.draft, address } })),
+  setAnonymous: (isAnonymous) => set((s) => ({ draft: { ...s.draft, isAnonymous } })),
+  setCrimeType: (crimeType) => set((s) => ({ draft: { ...s.draft, crimeType } })),
+  setDescription: (description) => set((s) => ({ draft: { ...s.draft, description } })),
+  addEvidence: (uri) => set((s) => ({ draft: { ...s.draft, evidence: [...(s.draft.evidence || []), uri] } })),
+  resetDraft: () => set({ draft: { ...defaultDraft } }),
+  // Original methods
   setReports: (reports) => set({ reports }),
   addReport: (report) => set((state) => ({ reports: [report, ...state.reports] })),
   updateReport: (id, data) =>

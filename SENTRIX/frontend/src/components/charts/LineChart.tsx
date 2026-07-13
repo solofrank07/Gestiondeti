@@ -23,7 +23,7 @@ export function LineChart({ data, height = 120, color = '#22c55e', showLabels = 
               <View
                 style={{
                   height: Math.max(barHeight, 2),
-                  backgroundColor: point.value > 0 ? color : '#1e293b',
+                  backgroundColor: point.value > 0 ? color : '#e0e3e6',
                   borderTopLeftRadius: 2,
                   borderTopRightRadius: 2,
                   opacity: 0.6 + (point.value / max) * 0.4,
@@ -36,8 +36,8 @@ export function LineChart({ data, height = 120, color = '#22c55e', showLabels = 
       </View>
       {showLabels && data.length > 1 && (
         <View className="flex-row justify-between mt-1">
-          <Text className="text-gray-600 text-[10px]">{data[0].label}</Text>
-          <Text className="text-gray-600 text-[10px]">{data[data.length - 1].label}</Text>
+          <Text className="text-sentrix-400 text-[10px]">{data[0].label}</Text>
+          <Text className="text-sentrix-400 text-[10px]">{data[data.length - 1].label}</Text>
         </View>
       )}
     </View>
