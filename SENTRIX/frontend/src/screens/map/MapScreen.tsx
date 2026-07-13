@@ -1,6 +1,7 @@
 import React, { useCallback, useRef, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native';
-import MapView, { PROVIDER_GOOGLE, Region } from 'react-native-maps';
+import MapView, { PROVIDER_GOOGLE } from '@/components/map/MapView';
+import { Region } from 'react-native-maps';
 import { useRiskZones } from '@/hooks/useRiskZones';
 import { useLocationContext } from '@/contexts/LocationContext';
 import { useMapStore } from '@/store/mapStore';

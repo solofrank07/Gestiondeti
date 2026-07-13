@@ -3,7 +3,8 @@ import {
   View, Text, ActivityIndicator, TouchableOpacity, Modal,
   FlatList, Switch, Alert,
 } from 'react-native';
-import MapView, { PROVIDER_GOOGLE, Heatmap as RNHeatmap, Region } from 'react-native-maps';
+import MapView, { PROVIDER_GOOGLE, Heatmap as RNHeatmap } from '@/components/map/MapView';
+import { Region } from 'react-native-maps';
 import { useHeatmap, useClusters, useRiskZones } from '@/hooks/useRiskZones';
 import { useLocationContext } from '@/contexts/LocationContext';
 import { useMapStore } from '@/store/mapStore';

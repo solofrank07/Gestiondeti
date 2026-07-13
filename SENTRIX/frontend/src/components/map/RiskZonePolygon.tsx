@@ -1,5 +1,5 @@
 import React from 'react';
-import { Marker, Polygon, Circle } from 'react-native-maps';
+import { Marker, Polygon, Circle } from '@/components/map/MapView';
 import { RiskZone } from '@/types/map';
 import { View, Text } from 'react-native';
 
