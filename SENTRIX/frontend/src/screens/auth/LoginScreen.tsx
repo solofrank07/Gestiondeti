@@ -31,6 +31,7 @@ export default function LoginScreen() {
     setError('');
     try {
       await login(data.email, data.password);
+      router.replace('/(tabs)/mapa');
     } catch (e: any) {
       setError(e?.response?.data?.message || 'Error al iniciar sesión');
     } finally {

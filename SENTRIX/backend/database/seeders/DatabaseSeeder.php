@@ -17,9 +17,20 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
-            'name' => 'Test User',
+        // ── Admin ──
+        // test@example.com / password → Rol: Administrador
+        $admin = User::factory()->create([
+            'name' => 'Test Admin',
             'email' => 'test@example.com',
         ]);
+        $admin->roles()->attach(1); // Administrador
+
+        // ── Ciudadano de prueba ──
+        // ciudadano@test.com / password → Rol: Ciudadano
+        $citizen = User::factory()->create([
+            'name' => 'Carlos Prueba',
+            'email' => 'ciudadano@test.com',
+        ]);
+        $citizen->roles()->attach(2); // Ciudadano
     }
 }

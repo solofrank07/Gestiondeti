@@ -17,6 +17,12 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
       type: 'sourceFile',
     };
   }
+  if (platform === 'web' && moduleName === 'expo-image-picker') {
+    return {
+      filePath: path.resolve(__dirname, 'src/mocks/expo-image-picker.web.ts'),
+      type: 'sourceFile',
+    };
+  }
   return context.resolveRequest(context, moduleName, platform);
 };
 

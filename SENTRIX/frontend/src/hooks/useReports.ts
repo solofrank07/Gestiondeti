@@ -85,10 +85,12 @@ export function useDeleteReport() {
   });
 }
 
-export function useNearbyReports() {
-  return useMutation({
-    mutationFn: ({ lat, lng, radius }: { lat: number; lng: number; radius?: number }) =>
-      reportService.getNearby(lat, lng, radius),
+export function useNearbyReports(lat?: number, lng?: number, radius = 1) {
+  return useQuery({
+    queryKey: ['reports', 'nearby', lat, lng, radius],
+    queryFn: () => reportService.getNearby(lat!, lng!, radius),
+    enabled: lat !== undefined && lng !== undefined,
+    refetchInterval: 30_000,
   });
 }
 

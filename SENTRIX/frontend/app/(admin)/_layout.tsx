@@ -11,6 +11,8 @@ export default function AdminLayout() {
     >
       <Stack.Screen name="dashboard" />
       <Stack.Screen name="etl" />
+      <Stack.Screen name="zonas-riesgo" />
+      <Stack.Screen name="reportes" />
     </Stack>
   );
 }

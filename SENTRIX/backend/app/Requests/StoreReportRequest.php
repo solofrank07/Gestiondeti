@@ -12,7 +12,7 @@ class StoreReportRequest extends FormRequest
     {
         return [
             'title' => 'required|string|max:200',
-            'description' => 'required|string',
+            'description' => 'nullable|string',
             'latitude' => 'required|numeric|between:-90,90',
             'longitude' => 'required|numeric|between:-180,180',
             'address' => 'nullable|string|max:255',
@@ -20,6 +20,7 @@ class StoreReportRequest extends FormRequest
             'category_id' => 'nullable|exists:categories,id',
             'incident_date' => 'required|date|before_or_equal:now',
             'priority' => 'nullable|in:baja,media,alta,critica',
+            'radius' => 'nullable|integer|min:0|max:5000',
             'media' => 'nullable|array',
             'media.*' => 'file|mimes:jpg,jpeg,png,gif,mp4,mov,avi|max:51200',
         ];

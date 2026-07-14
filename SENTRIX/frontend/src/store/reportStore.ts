@@ -9,6 +9,8 @@ interface DraftReport {
   crimeType?: string;
   description?: string;
   evidence?: string[];
+  incidentDate?: string;
+  radius?: number;
 }
 
 interface ReportState {
@@ -24,6 +26,8 @@ interface ReportState {
   setAnonymous: (val: boolean) => void;
   setCrimeType: (type: string) => void;
   setDescription: (desc: string) => void;
+  setIncidentDate: (date: string) => void;
+  setRadius: (r: number) => void;
   addEvidence: (uri: string) => void;
   resetDraft: () => void;
   // Existing
@@ -54,6 +58,8 @@ export const useReportStore = create<ReportState>((set) => ({
   setAnonymous: (isAnonymous) => set((s) => ({ draft: { ...s.draft, isAnonymous } })),
   setCrimeType: (crimeType) => set((s) => ({ draft: { ...s.draft, crimeType } })),
   setDescription: (description) => set((s) => ({ draft: { ...s.draft, description } })),
+  setIncidentDate: (incidentDate) => set((s) => ({ draft: { ...s.draft, incidentDate } })),
+  setRadius: (radius) => set((s) => ({ draft: { ...s.draft, radius } })),
   addEvidence: (uri) => set((s) => ({ draft: { ...s.draft, evidence: [...(s.draft.evidence || []), uri] } })),
   resetDraft: () => set({ draft: { ...defaultDraft } }),
   // Original methods

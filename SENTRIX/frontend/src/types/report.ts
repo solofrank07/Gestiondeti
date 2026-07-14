@@ -61,6 +61,7 @@ export interface CreateReportRequest {
   category_id?: number;
   incident_date: string;
   priority?: 'baja' | 'media' | 'alta' | 'critica';
+  radius?: number;
   media?: any[];
   is_anonymous?: boolean;
 }

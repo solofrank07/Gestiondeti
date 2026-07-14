@@ -1,7 +1,7 @@
 import React from 'react';
 import Svg, { Path, Circle, Rect, Line, Polyline, G } from 'react-native-svg';
 
-type Props = { size?: number; color?: string };
+type Props = { size?: number; color?: string; style?: any };
 
 export function Shield({ size = 24, color = '#03224d' }: Props) {
   return (

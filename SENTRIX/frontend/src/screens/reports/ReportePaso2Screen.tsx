@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, TextInput, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, ScrollView, Platform } from 'react-native';
 import { router } from 'expo-router';
 import { useReportStore } from '@/store/reportStore';
 
@@ -12,9 +12,10 @@ const crimeTypes = [
 ];
 
 export default function ReportePaso2Screen() {
-  const { draft, setCrimeType, setDescription } = useReportStore();
+  const { draft, setCrimeType, setDescription, setIncidentDate } = useReportStore();
   const [selected, setSelected] = useState(draft.crimeType || '');
   const [desc, setDesc] = useState(draft.description || '');
+  const [date, setDate] = useState(draft.incidentDate || new Date().toISOString().split('T')[0]);
 
   const handleSelect = (id: string) => {
     setSelected(id);
@@ -24,6 +25,7 @@ export default function ReportePaso2Screen() {
   const handleContinue = () => {
     if (!selected) return;
     setDescription(desc);
+    setIncidentDate(date);
     router.push('/(report)/confirmar');
   };
 
@@ -73,7 +75,7 @@ export default function ReportePaso2Screen() {
               </View>
               {isSelected && (
                 <View style={{ width: 24, height: 24, borderRadius: 12, backgroundColor: '#03224d', alignItems: 'center', justifyContent: 'center' }}>
-                  <Text style={{ color: '#ffffff', fontSize: 14 }}>✓</Text>
+                  <Text style={{ color: '#ffffff', fontSize: 14 }}>{'✓'}</Text>
                 </View>
               )}
             </TouchableOpacity>
@@ -96,6 +98,23 @@ export default function ReportePaso2Screen() {
           value={desc}
           onChangeText={setDesc}
         />
+
+        {/* Incident date */}
+        <Text style={{ fontSize: 16, fontWeight: '600', fontFamily: 'Inter', color: '#191c1e', marginTop: 24, marginBottom: 12 }}>
+          Fecha del incidente
+        </Text>
+        <TextInput
+          style={{
+            backgroundColor: '#ffffff', borderRadius: 12, borderWidth: 1, borderColor: '#c4c6d0',
+            padding: 16, fontSize: 15, fontFamily: 'Inter', color: '#191c1e',
+          }}
+          placeholder="YYYY-MM-DD"
+          placeholderTextColor="#747780"
+          value={date}
+          onChangeText={setDate}
+        />
+
+
 
         {/* Continue button */}
         <TouchableOpacity

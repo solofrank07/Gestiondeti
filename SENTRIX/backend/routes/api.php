@@ -10,6 +10,7 @@ use App\Controllers\PanicController;
 use App\Controllers\Admin\UserController;
 use App\Controllers\Admin\ETLController;
 use App\Controllers\Admin\SettingsController;
+use App\Controllers\Admin\RiskZoneController;
 use App\Controllers\AIController;
 
 // Health check
@@ -110,6 +111,15 @@ Route::prefix('v1')->group(function () {
             Route::get('admin/settings', [SettingsController::class, 'index']);
             Route::put('admin/settings', [SettingsController::class, 'update']);
             Route::get('admin/settings/{group}', [SettingsController::class, 'getGroup']);
+            // Risk zone management
+            Route::get('admin/risk-zones', [RiskZoneController::class, 'index']);
+            Route::post('admin/risk-zones', [RiskZoneController::class, 'store']);
+            Route::get('admin/risk-zones/{id}', [RiskZoneController::class, 'show']);
+            Route::put('admin/risk-zones/{id}', [RiskZoneController::class, 'update']);
+            Route::delete('admin/risk-zones/{id}', [RiskZoneController::class, 'destroy']);
+            Route::get('risk-levels', [RiskZoneController::class, 'riskLevels']);
+            // Admin report management
+            Route::get('admin/reports', [\App\Controllers\Admin\ReportController::class, 'index']);
         });
     });
 });

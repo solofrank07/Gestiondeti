@@ -55,4 +55,7 @@ export const ENDPOINTS = {
   ADMIN_ETL_HISTORY: '/admin/etl/history',
   ADMIN_ETL_IMPORT: (id: number) => `/admin/etl/imports/${id}`,
   ADMIN_SETTINGS: '/admin/settings',
+  ADMIN_RISK_ZONES: '/admin/risk-zones',
+  ADMIN_RISK_ZONE: (id: number) => `/admin/risk-zones/${id}`,
+  RISK_LEVELS: '/risk-levels',
 };

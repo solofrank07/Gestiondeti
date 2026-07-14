@@ -81,7 +81,7 @@ export const MapView = forwardRef(({ children, style, initialRegion, onRegionCha
   );
 });
 
-export const Marker = ({ coordinate, title, description, children }: any) => {
+export const Marker = ({ coordinate, children, onPress }: any) => {
   const map = useContext(MapContext);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const rootRef = useRef<any>(null);
@@ -93,6 +93,10 @@ export const Marker = ({ coordinate, title, description, children }: any) => {
     el.style.position = 'absolute';
     containerRef.current = el;
 
+    if (onPress) {
+      el.addEventListener('click', onPress);
+    }
+
     const root = createRoot(el);
     rootRef.current = root;
     root.render(<>{children}</>);
@@ -103,6 +107,9 @@ export const Marker = ({ coordinate, title, description, children }: any) => {
 
     return () => {
       marker.remove();
+      if (onPress) {
+        el.removeEventListener('click', onPress);
+      }
       // Safe async unmount to prevent React 18 warnings
       setTimeout(() => {
         if (rootRef.current) {
@@ -110,7 +117,7 @@ export const Marker = ({ coordinate, title, description, children }: any) => {
         }
       }, 0);
     };
-  }, [map, coordinate.latitude, coordinate.longitude, children]);
+  }, [map, coordinate.latitude, coordinate.longitude, children, onPress]);
 
   return null;
 };

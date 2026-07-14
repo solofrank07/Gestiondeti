@@ -1,12 +1,13 @@
 import React, { useCallback, useRef, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native';
-import MapView, { PROVIDER_GOOGLE } from '@/components/map/MapView';
-import { Region } from 'react-native-maps';
+import MapView, { Region, Marker, Circle } from '@/components/map/MapView';
+import { Search, MapPin, Mic } from '@/components/shared/Icons';
 import { useRiskZones } from '@/hooks/useRiskZones';
 import { useLocationContext } from '@/contexts/LocationContext';
 import { useMapStore } from '@/store/mapStore';
 import RiskZonePolygon from '@/components/map/RiskZonePolygon';
 import { router } from 'expo-router';
+import { useNearbyReports } from '@/hooks/useReports';
 
 const CRIME_FILTERS = ['Todos', 'Hurto', 'Robo agravado', 'Extorsión', 'Sicariato'];
 const RISK_LEVELS = [
@@ -18,7 +19,7 @@ const RISK_LEVELS = [
 export default function MapScreen() {
   const { location, requestPermission } = useLocationContext();
   const { bounds, setBounds } = useMapStore();
-  const mapRef = useRef<MapView>(null);
+  const mapRef = useRef<any>(null);
   const [activeFilter, setActiveFilter] = useState('Todos');
   const [region, setRegion] = useState<Region>({
     latitude: location?.coords.latitude || -5.194,
@@ -29,6 +30,8 @@ export default function MapScreen() {
 
   const { isLoading } = useRiskZones(bounds);
   const riskZones = useMapStore((s) => s.riskZones);
+  const { data: nearbyReports } = useNearbyReports(region.latitude, region.longitude);
+  const reports = Array.isArray(nearbyReports) ? nearbyReports : [];
 
   React.useEffect(() => { requestPermission(); }, []);
 
@@ -57,16 +60,35 @@ export default function MapScreen() {
       <MapView
         ref={mapRef}
         style={{ flex: 1 }}
-        provider={PROVIDER_GOOGLE}
         initialRegion={region}
         onRegionChangeComplete={onRegionChangeComplete}
-        showsUserLocation
-        showsMyLocationButton
-        showsTraffic
-        rotateEnabled
       >
         {riskZones.map((zone) => (
           <RiskZonePolygon key={zone.id} zone={zone} />
+        ))}
+        {reports.map((r: any) => (
+          <React.Fragment key={r.id}>
+            {r.radius ? (
+              <Circle
+                center={{ latitude: r.latitude, longitude: r.longitude }}
+                radius={r.radius}
+                fillColor={r.priority === 'critica' ? '#ef4444' : r.priority === 'alta' ? '#f97316' : '#3b82f6'}
+                strokeColor={r.priority === 'critica' ? '#ef4444' : r.priority === 'alta' ? '#f97316' : '#3b82f6'}
+                strokeWidth={2}
+              />
+            ) : null}
+            <Marker
+              coordinate={{ latitude: r.latitude, longitude: r.longitude }}
+              onPress={() => router.push({ pathname: '/(report)/detalle', params: { id: r.id } })}
+            >
+              <View style={{
+                width: 16, height: 16, borderRadius: 8,
+                backgroundColor: r.priority === 'critica' ? '#ef4444' : r.priority === 'alta' ? '#f97316' : '#3b82f6',
+                borderWidth: 2, borderColor: '#ffffff',
+                shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 4, elevation: 4,
+              }} />
+            </Marker>
+          </React.Fragment>
         ))}
       </MapView>
 
@@ -78,14 +100,14 @@ export default function MapScreen() {
         paddingHorizontal: 16, paddingVertical: 4,
         shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 12, elevation: 3,
       }}>
-        <Text style={{ fontSize: 18, marginRight: 8, color: '#747780' }}>🔍</Text>
+        <Search size={18} color="#747780" style={{ marginRight: 8 }} />
         <TextInput
           style={{ flex: 1, paddingVertical: 12, fontFamily: 'Inter', fontSize: 15, color: '#191c1e' }}
           placeholder="Buscar dirección, zona..."
           placeholderTextColor="#747780"
         />
         <TouchableOpacity>
-          <Text style={{ fontSize: 20, color: '#747780' }}>🎤</Text>
+          <Mic size={20} color="#747780" />
         </TouchableOpacity>
       </View>
 
@@ -139,6 +161,19 @@ export default function MapScreen() {
         </View>
       )}
 
+      {/* Create report FAB */}
+      <TouchableOpacity
+        onPress={() => router.push('/(report)/paso1')}
+        style={{
+          position: 'absolute', bottom: 160, right: 16,
+          backgroundColor: '#03224d', width: 56, height: 56, borderRadius: 28,
+          alignItems: 'center', justifyContent: 'center',
+          shadowColor: '#03224d', shadowOpacity: 0.3, shadowRadius: 10, elevation: 5,
+        }}
+      >
+        <Text style={{ color: '#ffffff', fontSize: 28, lineHeight: 30, fontWeight: '300' }}>+</Text>
+      </TouchableOpacity>
+
       {/* Current location FAB */}
       <TouchableOpacity
         onPress={() => mapRef.current?.animateToRegion(region, 500)}
@@ -149,7 +184,7 @@ export default function MapScreen() {
           shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 8, elevation: 3,
         }}
       >
-        <Text style={{ fontSize: 22 }}>📍</Text>
+        <MapPin size={22} color="#03224d" />
       </TouchableOpacity>
 
       {/* Bottom info card */}

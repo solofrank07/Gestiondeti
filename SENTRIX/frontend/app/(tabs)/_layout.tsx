@@ -1,6 +1,5 @@
 import { Tabs, router } from 'expo-router';
 import { Text, View, TouchableOpacity } from 'react-native';
-import { useAuthStore } from '@/store/authStore';
 import { MapPin, Bell, User } from '@/components/shared/Icons';
 
 type IconName = 'mapa' | 'alertas' | 'perfil';
@@ -22,9 +21,6 @@ function TabIcon({ routeName, focused }: { routeName: string; focused: boolean }
 }
 
 export default function TabsLayout() {
-  const user = useAuthStore((s) => s.user);
-  const isAuthority = user?.roles?.some((r) => r.name === 'Autoridad' || r.name === 'Administrador');
-
   return (
     <Tabs
       screenOptions={({ route }) => ({
@@ -44,10 +40,7 @@ export default function TabsLayout() {
       })}
     >
       <Tabs.Screen name="mapa" />
-      <Tabs.Screen
-        name="alertas"
-        options={{ href: isAuthority ? '/(tabs)/alertas' : null }}
-      />
+      <Tabs.Screen name="alertas" />
       <Tabs.Screen
         name="perfil"
         options={{

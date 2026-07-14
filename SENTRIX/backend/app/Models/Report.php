@@ -17,7 +17,7 @@ class Report extends Model
         'user_id', 'crime_type_id', 'category_id', 'status_id',
         'title', 'description', 'latitude', 'longitude', 'address',
         'incident_date', 'priority', 'source', 'reporter_ip',
-        'is_verified', 'verified_at', 'verified_by',
+        'is_verified', 'verified_at', 'verified_by', 'radius',
     ];
 
     protected function casts(): array

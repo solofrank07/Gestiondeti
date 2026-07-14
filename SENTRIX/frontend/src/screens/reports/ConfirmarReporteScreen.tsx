@@ -1,15 +1,22 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView, Alert } from 'react-native';
 import { router } from 'expo-router';
+import { useQueryClient } from '@tanstack/react-query';
 import { useReportStore } from '@/store/reportStore';
 import { reportService } from '@/services/reportService';
 
 const crimeLabels: Record<string, string> = {
-  hurto: 'Robo/Hurto', 'robo-agravado': 'Robo agravado',
-  extorsion: 'Extorsión', sicariato: 'Sicariato', 'zona-insegura': 'Zona insegura',
+  hurto: 'Hurto', 'robo-agravado': 'Asalto',
+  extorsion: 'Extorsión', sicariato: 'Homicidio', 'zona-insegura': 'Vandalismo',
+};
+
+const crimeTypeIdMap: Record<string, number> = {
+  hurto: 2, 'robo-agravado': 3, extorsion: 9,
+  sicariato: 7, 'zona-insegura': 12,
 };
 
 export default function ConfirmarReporteScreen() {
+  const queryClient = useQueryClient();
   const { draft, resetDraft } = useReportStore();
   const [sending, setSending] = useState(false);
 
@@ -17,16 +24,28 @@ export default function ConfirmarReporteScreen() {
     if (!draft.lat || !draft.lng || !draft.crimeType) return;
     setSending(true);
     try {
-      await reportService.createReport({
+      const mediaFiles = (draft.evidence || []).map((uri) => ({
+        uri,
+        type: uri.match(/\.(mp4|mov|avi)/i) ? 'video/mp4' : 'image/jpeg',
+        name: uri.split('/').pop() || `evidencia-${Date.now()}.jpg`,
+      })) as any;
+
+      const created = await reportService.createReport({
         title: crimeLabels[draft.crimeType] || draft.crimeType,
         description: draft.description || '',
         latitude: draft.lat,
         longitude: draft.lng,
+        address: draft.address,
         priority: 'media',
-        incident_date: new Date().toISOString(),
-        is_anonymous: draft.isAnonymous,
+        incident_date: draft.incidentDate ? new Date(draft.incidentDate).toISOString() : new Date().toISOString(),
+        crime_type_id: crimeTypeIdMap[draft.crimeType] || undefined,
+        radius: draft.radius || undefined,
+        media: mediaFiles.length > 0 ? mediaFiles : undefined,
       });
-      const trackingId = `RPT-${Date.now().toString(36).toUpperCase()}`;
+      const reportId = (created as any)?.data?.id || (created as any)?.id;
+      const trackingId = reportId ? `RPT-${reportId}` : `RPT-${Date.now().toString(36).toUpperCase()}`;
+      // Invalidate nearby reports so new one appears on map
+      queryClient.invalidateQueries({ queryKey: ['reports', 'nearby'] });
       resetDraft();
       router.replace({ pathname: '/(report)/enviado', params: { trackingId } });
     } catch (e: any) {
@@ -80,8 +99,8 @@ export default function ConfirmarReporteScreen() {
         {/* Anonymous badge */}
         {draft.isAnonymous && (
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 24 }}>
-            <Text style={{ fontSize: 16 }}>🙈</Text>
-            <Text style={{ fontFamily: 'Inter', fontSize: 14, color: '#747780' }}>Reportado de forma anónima</Text>
+            <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#747780' }} />
+            <Text style={{ fontFamily: 'Inter', fontSize: 14, color: '#747780' }}>Reportado de forma anonima</Text>
           </View>
         )}
 
@@ -115,7 +134,7 @@ export default function ConfirmarReporteScreen() {
           }}
         >
           <Text style={{ color: '#ffffff', fontFamily: 'Inter', fontSize: 14, fontWeight: '700', letterSpacing: 1 }}>
-            🔴 BOTÓN DE PÁNICO
+            BOTON DE PANICO
           </Text>
           <Text style={{ color: '#ffffff', fontFamily: 'Inter', fontSize: 12, marginTop: 4 }}>
             Notifica de inmediato a la Policía

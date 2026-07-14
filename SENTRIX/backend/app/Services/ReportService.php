@@ -22,6 +22,8 @@ class ReportService
     public function create(array $data, User $user): Report
     {
         $data['user_id'] = $user->id;
+        $data['description'] = $data['description'] ?? 'Sin descripcion';
+        $data['title'] = $data['title'] ?? 'Reporte';
         $report = $this->reportRepo->create($data);
         $this->riskZoneRepo->findByLocation($data['latitude'], $data['longitude'], 0.5);
         return $report->load(['crimeType', 'category', 'status']);

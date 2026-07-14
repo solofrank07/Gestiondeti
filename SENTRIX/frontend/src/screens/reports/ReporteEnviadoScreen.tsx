@@ -36,13 +36,13 @@ export default function ReporteEnviadoScreen() {
         padding: 20, width: '100%', marginBottom: 32,
       }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-          <Text style={{ fontSize: 20 }}>⏱️</Text>
+          <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#747780' }} />
           <Text style={{ fontFamily: 'Inter', fontSize: 15, color: '#191c1e', flex: 1 }}>
-            Tiempo estimado de revisión: 24 horas
+            Tiempo estimado de revision: 24 horas
           </Text>
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-          <Text style={{ fontSize: 20 }}>🏷️</Text>
+          <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#03224d' }} />
           <Text style={{ fontFamily: 'Inter', fontSize: 15, color: '#191c1e', flex: 1 }}>
             N° de seguimiento: {trackingId || 'RPT-0000'}
           </Text>

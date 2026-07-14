@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Modal, ScrollView } from 'react-native';
+import { Calendar } from '@/components/shared/Icons';
 
 const CRIME_TYPES = ['Hurto', 'Robo agravado', 'Extorsión', 'Sicariato', 'Todos'];
 const HOUR_RANGES = ['Mañana', 'Tarde', 'Noche', 'Madrugada'];
@@ -114,13 +115,13 @@ export default function FilterPanel({ visible, onClose }: FilterPanelProps) {
               <View style={{ flex: 1 }}>
                 <Text style={{ fontFamily: 'Inter', fontSize: 12, color: '#747780', marginBottom: 4 }}>Desde</Text>
                 <TouchableOpacity style={{ backgroundColor: '#f7f9fc', borderRadius: 8, padding: 12, borderWidth: 1, borderColor: '#e0e3e6' }}>
-                  <Text style={{ fontFamily: 'Inter', fontSize: 14, color: '#747780' }}>📅 Seleccionar</Text>
+                  <Calendar size={16} color="#747780" /><Text style={{ fontFamily: 'Inter', fontSize: 14, color: '#747780' }}> Seleccionar</Text>
                 </TouchableOpacity>
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={{ fontFamily: 'Inter', fontSize: 12, color: '#747780', marginBottom: 4 }}>Hasta</Text>
                 <TouchableOpacity style={{ backgroundColor: '#f7f9fc', borderRadius: 8, padding: 12, borderWidth: 1, borderColor: '#e0e3e6' }}>
-                  <Text style={{ fontFamily: 'Inter', fontSize: 14, color: '#747780' }}>📅 Seleccionar</Text>
+                  <Calendar size={16} color="#747780" /><Text style={{ fontFamily: 'Inter', fontSize: 14, color: '#747780' }}> Seleccionar</Text>
                 </TouchableOpacity>
               </View>
             </View>

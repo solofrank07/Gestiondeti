@@ -3,8 +3,7 @@ import {
   View, Text, ActivityIndicator, TouchableOpacity, Modal,
   FlatList, Switch, Alert,
 } from 'react-native';
-import MapView, { PROVIDER_GOOGLE, Heatmap as RNHeatmap } from '@/components/map/MapView';
-import { Region } from 'react-native-maps';
+import MapView, { Heatmap as RNHeatmap, Region } from '@/components/map/MapView';
 import { useHeatmap, useClusters, useRiskZones } from '@/hooks/useRiskZones';
 import { useLocationContext } from '@/contexts/LocationContext';
 import { useMapStore } from '@/store/mapStore';
@@ -43,7 +42,7 @@ export default function HeatmapScreen() {
   const [showLegend, setShowLegend] = useState(true);
   const [showClusters, setShowClusters] = useState(false);
   const [heatmapRadius, setHeatmapRadius] = useState(40);
-  const mapRef = useRef<MapView>(null);
+  const mapRef = useRef<any>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
   const derivedBounds = useMemo(() => ({
@@ -89,12 +88,8 @@ export default function HeatmapScreen() {
       <MapView
         ref={mapRef}
         className="flex-1"
-        provider={PROVIDER_GOOGLE}
         initialRegion={region}
         onRegionChangeComplete={onRegionChangeComplete}
-        showsUserLocation
-        showsMyLocationButton
-        mapType="satellite"
       >
         {heatmapPoints.length > 0 && (
           <RNHeatmap
