@@ -19,7 +19,11 @@ export const reportService = {
       if (key === 'media' && Array.isArray(value)) {
         value.forEach((file: any) => formData.append('media[]', file));
       } else if (value !== undefined) {
-        formData.append(key, typeof value === 'object' ? JSON.stringify(value) : String(value));
+        // Laravel 11 boolean validator: accepts 0/1/"0"/"1", NOT "true"/"false"
+        const strVal = typeof value === 'boolean' ? (value ? '1' : '0')
+                     : typeof value === 'object' ? JSON.stringify(value)
+                     : String(value);
+        formData.append(key, strVal);
       }
     });
     const res = await api.post(ENDPOINTS.REPORTS, formData, {

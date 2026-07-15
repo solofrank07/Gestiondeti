@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { useAuth } from '@/contexts/AuthContext';
 import { router } from 'expo-router';
@@ -12,6 +12,13 @@ export default function ProfileScreen() {
     router.replace('/(auth)/login');
   };
 
+  // Redirect to login if session expired while on this screen
+  useEffect(() => {
+    if (!user && !isLoading) {
+      router.replace('/(auth)/login');
+    }
+  }, [user, isLoading]);
+
   if (isLoading) {
     return (
       <View style={{ flex: 1, backgroundColor: '#f7f9fc', justifyContent: 'center', alignItems: 'center' }}>
@@ -21,7 +28,13 @@ export default function ProfileScreen() {
     );
   }
 
-  if (!user) return null;
+  if (!user) {
+    return (
+      <View style={{ flex: 1, backgroundColor: '#f7f9fc', justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#03224d" />
+      </View>
+    );
+  }
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: '#f7f9fc' }}>

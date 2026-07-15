@@ -17,6 +17,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => \App\Middleware\RoleMiddleware::class,
             'jwt.auth' => \App\Middleware\JwtMiddleware::class,
         ]);
+
+        // API routes: return null (no redirect) → AuthenticationException → JSON 401
+        // Web routes: redirect to login
+        $middleware->redirectGuestsTo(fn (Request $request) =>
+            $request->is('api/*') ? null : route('login')
+        );
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

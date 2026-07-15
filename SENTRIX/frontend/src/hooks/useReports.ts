@@ -1,11 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { reportService } from '@/services/reportService';
 import { useReportStore } from '@/store/reportStore';
+import { useAuthStore } from '@/store/authStore';
 import { CreateReportRequest } from '@/types/report';
 import { handleApiError } from '@/utils/apiHelpers';
 import { Alert } from 'react-native';
 
 export function useReports(page: number = 1) {
+  const token = useAuthStore((s) => s.token);
   const setReports = useReportStore((s) => s.setReports);
   const setPage = useReportStore((s) => s.setPage);
   const setTotalPages = useReportStore((s) => s.setTotalPages);
@@ -24,6 +26,7 @@ export function useReports(page: number = 1) {
         setLoading(false);
       }
     },
+    enabled: !!token,
   });
 }
 
