@@ -17,13 +17,14 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { user, token, isAuthenticated, isLoading, setAuth, setUser, setLoading, logout: storeLogout } = useAuthStore();
 
+  // Re-run refresh when token becomes available (after zustand persist hydration)
   useEffect(() => {
     if (token) {
       refreshProfile().finally(() => setLoading(false));
     } else {
       setLoading(false);
     }
-  }, []);
+  }, [token]);
 
   const login = async (email: string, password: string) => {
     const response = await authService.login({ email, password });
@@ -48,8 +49,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const profile = await authService.getProfile();
       setUser(profile);
-    } catch {
-      storeLogout();
+    } catch (err: any) {
+      // Only logout on 401 (expired token), keep cached user on network errors
+      if (err?.response?.status === 401) storeLogout();
     }
   };
 

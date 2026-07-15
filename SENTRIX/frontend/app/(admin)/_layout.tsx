@@ -7,7 +7,7 @@ export default function AdminLayout() {
 
   const isAdmin = user?.roles?.some(r => r.name === 'Administrador');
   if (!isAuthenticated || !isAdmin) {
-    return <Redirect href="/(tabs)/" />;
+    return <Redirect href="/mapa" />;
   }
 
   return (

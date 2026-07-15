@@ -24,6 +24,7 @@ export interface CrimeType {
   id: number;
   name: string;
   slug: string;
+  description?: string;
   severity_weight: number;
   icon?: string;
   color?: string;

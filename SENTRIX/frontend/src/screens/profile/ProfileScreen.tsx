@@ -1,16 +1,25 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { useAuth } from '@/contexts/AuthContext';
 import { router } from 'expo-router';
 import { BarChart2, Inbox } from '@/components/shared/Icons';
 
 export default function ProfileScreen() {
-  const { user, logout } = useAuth();
+  const { user, isLoading, logout } = useAuth();
 
   const handleLogout = () => {
     logout();
     router.replace('/(auth)/login');
   };
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, backgroundColor: '#f7f9fc', justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#03224d" />
+        <Text style={{ fontFamily: 'Inter', fontSize: 15, color: '#747780', marginTop: 12 }}>Cargando perfil...</Text>
+      </View>
+    );
+  }
 
   if (!user) return null;
 

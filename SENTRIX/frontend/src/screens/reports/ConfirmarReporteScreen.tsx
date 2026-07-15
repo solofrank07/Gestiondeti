@@ -7,6 +7,7 @@ import { panicService } from '@/services/panicService';
 import { reportService } from '@/services/reportService';
 import { goBack } from '@/utils/navigation';
 import { CrimeType } from '@/types/report';
+import api from '@/services/api';
 
 export default function ConfirmarReporteScreen() {
   const queryClient = useQueryClient();
@@ -15,15 +16,7 @@ export default function ConfirmarReporteScreen() {
   const [crimeTypes, setCrimeTypes] = useState<CrimeType[]>([]);
 
   useEffect(() => {
-    (async () => {
-      try {
-        const api = (await import('@/services/api')).default;
-        const res = await api.get('/crime-types');
-        setCrimeTypes(res.data);
-      } catch (e) {
-        console.error('Failed to load crime types', e);
-      }
-    })();
+    api.get('/crime-types').then(res => setCrimeTypes(res.data)).catch(console.error);
   }, []);
 
   const currentCrimeType = crimeTypes.find(ct => ct.slug === draft.crimeType);

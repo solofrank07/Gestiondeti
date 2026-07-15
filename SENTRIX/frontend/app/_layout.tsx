@@ -1,5 +1,6 @@
 import '../src/global.css';
 import React, { useEffect } from 'react';
+import { View, Text, ActivityIndicator } from 'react-native';
 import { Slot, router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -27,12 +28,20 @@ const queryClient = new QueryClient({
   },
 });
 
+function SplashScreen() {
+  return (
+    <View style={{ flex: 1, backgroundColor: '#ffffff', justifyContent: 'center', alignItems: 'center' }}>
+      <Text style={{ fontSize: 28, fontWeight: '700', fontFamily: 'Inter', color: '#03224d' }}>Alerta Piura</Text>
+      <ActivityIndicator size="large" color="#03224d" style={{ marginTop: 24 }} />
+    </View>
+  );
+}
+
 function AppInitializer({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuthStore();
   const { location } = useLocationContext();
 
   useEffect(() => {
-    // Notification permission requires user gesture on web; wrap safely
     try { notificationService.requestPermission(); } catch {}
     registerBackgroundTask();
 
@@ -50,8 +59,9 @@ function AppInitializer({ children }: { children: React.ReactNode }) {
 
   useGeofenceAuto();
 
+  // Show splash while auth hydrates, render children immediately once done
   if (isLoading && !isAuthenticated) {
-    return null;
+    return <SplashScreen />;
   }
 
   return <>{children}</>;

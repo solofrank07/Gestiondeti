@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 import { useReportStore } from '@/store/reportStore';
 import { goBack } from '@/utils/navigation';
 import { CrimeType } from '@/types/report';
+import api from '@/services/api';
 
 export default function ReportePaso2Screen() {
   const { draft, setCrimeType, setDescription, setIncidentDate } = useReportStore();
@@ -14,17 +15,7 @@ export default function ReportePaso2Screen() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    (async () => {
-      try {
-        const api = (await import('@/services/api')).default;
-        const res = await api.get('/crime-types');
-        setCrimeTypes(res.data);
-      } catch (e) {
-        console.error('Failed to load crime types', e);
-      } finally {
-        setLoading(false);
-      }
-    })();
+    api.get('/crime-types').then(res => setCrimeTypes(res.data)).catch(console.error).finally(() => setLoading(false));
   }, []);
 
   const handleSelect = (id: string) => {
