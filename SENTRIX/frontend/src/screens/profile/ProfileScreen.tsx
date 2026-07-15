@@ -1,13 +1,11 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
-import { useAuthStore } from '@/store/authStore';
 import { useAuth } from '@/contexts/AuthContext';
 import { router } from 'expo-router';
 import { BarChart2, Inbox } from '@/components/shared/Icons';
 
 export default function ProfileScreen() {
-  const user = useAuthStore((s) => s.user);
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
 
   const handleLogout = () => {
     logout();

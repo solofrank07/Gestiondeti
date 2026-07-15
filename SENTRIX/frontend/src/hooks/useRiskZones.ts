@@ -11,8 +11,12 @@ export function useRiskZones(bounds: Bounds | null) {
     queryFn: async () => {
       if (!bounds) return [];
       const zones = await mapService.getRiskZones(bounds);
-      setRiskZones(zones);
-      return zones;
+      // Una respuesta malformada (ej. request abortada a mitad de un
+      // reload, backend caido) no debe dejar el store en un estado no-array
+      // y romper los .map() que lo consumen.
+      const safeZones = Array.isArray(zones) ? zones : [];
+      setRiskZones(safeZones);
+      return safeZones;
     },
     enabled: !!bounds,
   });
@@ -26,8 +30,9 @@ export function useHeatmap(bounds: Bounds | null, zoom: number) {
     queryFn: async () => {
       if (!bounds) return [];
       const data = await mapService.getHeatmap(bounds, zoom);
-      setHeatmapData(data);
-      return data;
+      const safeData = Array.isArray(data) ? data : [];
+      setHeatmapData(safeData);
+      return safeData;
     },
     enabled: !!bounds,
   });
@@ -41,8 +46,9 @@ export function useClusters(bounds: Bounds | null, zoom: number) {
     queryFn: async () => {
       if (!bounds) return [];
       const clusters = await mapService.getClusters(bounds, zoom);
-      setClusters(clusters);
-      return clusters;
+      const safeClusters = Array.isArray(clusters) ? clusters : [];
+      setClusters(safeClusters);
+      return safeClusters;
     },
     enabled: !!bounds,
   });

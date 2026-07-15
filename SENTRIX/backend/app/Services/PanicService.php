@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Interfaces\PanicAlertRepositoryInterface;
 use App\Models\PanicAlert;
 use App\Models\User;
+use Carbon\Carbon;
 
 class PanicService
 {
@@ -28,11 +29,20 @@ class PanicService
 
     public function getActiveAlerts(): array
     {
+        $this->autoExpireStaleAlerts();
         return $this->panicRepo->getActiveAlerts()->toArray();
     }
 
     public function markAsAttended(int $id, int $userId): PanicAlert
     {
         return $this->panicRepo->markAsAttended($id, $userId);
+    }
+
+    public function autoExpireStaleAlerts(): int
+    {
+        $cutoff = Carbon::now()->subHours(6);
+        return PanicAlert::where('status', 'activo')
+            ->where('created_at', '<', $cutoff)
+            ->update(['status' => 'falso_alarma']);
     }
 }

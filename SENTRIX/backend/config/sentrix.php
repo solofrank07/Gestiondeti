@@ -13,6 +13,16 @@ return [
         'cache_ttl_minutes' => 15,
         'max_grid_points' => 50000,
         'prewarm_enabled' => env('HEATMAP_PREWARM_ENABLED', false),
+        'prewarm_regions' => [
+            'piura' => [
+                'zooms' => [10, 12, 14],
+                'tiles' => [
+                    10 => ['x' => [460, 465], 'y' => [310, 315]],
+                    12 => ['x' => [1840, 1860], 'y' => [1240, 1260]],
+                    14 => ['x' => [7360, 7420], 'y' => [4960, 5020]],
+                ],
+            ],
+        ],
     ],
 
     'etl' => [

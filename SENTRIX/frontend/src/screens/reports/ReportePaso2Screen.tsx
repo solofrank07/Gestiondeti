@@ -1,22 +1,31 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, TextInput, ScrollView, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, TextInput, ScrollView, Platform, Alert } from 'react-native';
 import { router } from 'expo-router';
 import { useReportStore } from '@/store/reportStore';
 import { goBack } from '@/utils/navigation';
-
-const crimeTypes = [
-  { id: 'hurto', icon: '🏃', label: 'Hurto', desc: 'Sustracción sin violencia o amenaza.' },
-  { id: 'robo-agravado', icon: '⚠️', label: 'Robo agravado', desc: 'Sustracción con violencia o uso de armas.' },
-  { id: 'extorsion', icon: '🛡️', label: 'Extorsión', desc: 'Amenazas para obtener provecho económico.' },
-  { id: 'sicariato', icon: '⚖️', label: 'Sicariato', desc: 'Homicidio por encargo o recompensa.' },
-  { id: 'zona-insegura', icon: '🚨', label: 'Zona insegura', desc: 'Reporte de actividad sospechosa o falta de alumbrado.' },
-];
+import { CrimeType } from '@/types/report';
 
 export default function ReportePaso2Screen() {
   const { draft, setCrimeType, setDescription, setIncidentDate } = useReportStore();
   const [selected, setSelected] = useState(draft.crimeType || '');
   const [desc, setDesc] = useState(draft.description || '');
   const [date, setDate] = useState(draft.incidentDate || new Date().toISOString().split('T')[0]);
+  const [crimeTypes, setCrimeTypes] = useState<CrimeType[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const api = (await import('@/services/api')).default;
+        const res = await api.get('/crime-types');
+        setCrimeTypes(res.data);
+      } catch (e) {
+        console.error('Failed to load crime types', e);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
 
   const handleSelect = (id: string) => {
     setSelected(id);
@@ -25,6 +34,10 @@ export default function ReportePaso2Screen() {
 
   const handleContinue = () => {
     if (!selected) return;
+    if (!desc.trim()) {
+      Alert.alert('Descripción requerida', 'Por favor describe brevemente lo ocurrido.');
+      return;
+    }
     setDescription(desc);
     setIncidentDate(date);
     router.push('/(report)/confirmar');
@@ -55,37 +68,41 @@ export default function ReportePaso2Screen() {
         </Text>
 
         {/* Crime type options */}
-        {crimeTypes.map((ct) => {
-          const isSelected = selected === ct.id;
-          return (
-            <TouchableOpacity
-              key={ct.id}
-              onPress={() => handleSelect(ct.id)}
-              style={{
-                flexDirection: 'row', alignItems: 'center',
-                backgroundColor: isSelected ? '#eef2f7' : '#ffffff',
-                borderRadius: 12, borderWidth: 1,
-                borderColor: isSelected ? '#03224d' : '#e0e3e6',
-                padding: 16, marginBottom: 8,
-              }}
-            >
-              <Text style={{ fontSize: 28, marginRight: 12 }}>{ct.icon}</Text>
-              <View style={{ flex: 1 }}>
-                <Text style={{ fontFamily: 'Inter', fontSize: 15, fontWeight: '600', color: '#191c1e' }}>{ct.label}</Text>
-                <Text style={{ fontFamily: 'Inter', fontSize: 13, color: '#747780', marginTop: 2 }}>{ct.desc}</Text>
-              </View>
-              {isSelected && (
-                <View style={{ width: 24, height: 24, borderRadius: 12, backgroundColor: '#03224d', alignItems: 'center', justifyContent: 'center' }}>
-                  <Text style={{ color: '#ffffff', fontSize: 14 }}>{'✓'}</Text>
+        {loading ? (
+          <Text style={{ fontFamily: 'Inter', fontSize: 14, color: '#747780' }}>Cargando tipos de incidente...</Text>
+        ) : (
+          crimeTypes.map((ct) => {
+            const isSelected = selected === ct.slug;
+            return (
+              <TouchableOpacity
+                key={ct.id}
+                onPress={() => handleSelect(ct.slug)}
+                style={{
+                  flexDirection: 'row', alignItems: 'center',
+                  backgroundColor: isSelected ? '#eef2f7' : '#ffffff',
+                  borderRadius: 12, borderWidth: 1,
+                  borderColor: isSelected ? '#03224d' : '#e0e3e6',
+                  padding: 16, marginBottom: 8,
+                }}
+              >
+                <Text style={{ fontSize: 28, marginRight: 12 }}>⚠️</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontFamily: 'Inter', fontSize: 15, fontWeight: '600', color: '#191c1e' }}>{ct.name}</Text>
+                  <Text style={{ fontFamily: 'Inter', fontSize: 13, color: '#747780', marginTop: 2 }}>{ct.description}</Text>
                 </View>
-              )}
-            </TouchableOpacity>
-          );
-        })}
+                {isSelected && (
+                  <View style={{ width: 24, height: 24, borderRadius: 12, backgroundColor: '#03224d', alignItems: 'center', justifyContent: 'center' }}>
+                    <Text style={{ color: '#ffffff', fontSize: 14 }}>{'✓'}</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            );
+          })
+        )}
 
         {/* Description */}
         <Text style={{ fontSize: 16, fontWeight: '600', fontFamily: 'Inter', color: '#191c1e', marginTop: 24, marginBottom: 12 }}>
-          Describe brevemente lo ocurrido <Text style={{ color: '#747780', fontWeight: '400' }}>(opcional)</Text>
+          Describe brevemente lo ocurrido
         </Text>
         <TextInput
           style={{
@@ -120,9 +137,9 @@ export default function ReportePaso2Screen() {
         {/* Continue button */}
         <TouchableOpacity
           onPress={handleContinue}
-          disabled={!selected}
+          disabled={!selected || !desc.trim()}
           style={{
-            backgroundColor: selected ? '#03224d' : '#c4c6d0',
+            backgroundColor: selected && desc.trim() ? '#03224d' : '#c4c6d0',
             paddingVertical: 14, borderRadius: 12, alignItems: 'center',
             marginTop: 24, marginBottom: 40,
           }}

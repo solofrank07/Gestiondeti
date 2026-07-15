@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\SettingType;
 use Illuminate\Database\Eloquent\Model;
 
 class Setting extends Model
@@ -12,6 +13,7 @@ class Setting extends Model
     {
         return [
             'is_public' => 'boolean',
+            'type' => SettingType::class,
         ];
     }
 }

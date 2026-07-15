@@ -238,17 +238,27 @@ class GeofencingService
 
     private function getHeading(float $lat, float $lng, User $user): string
     {
-        if (!$user->last_geofence_state) return 'N';
+        $lastLog = \App\Models\GeofenceLog::where('user_id', $user->id)
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->latest('event_at')
+            ->first();
 
-        $lastState = collect($user->last_geofence_state)->first();
-        if (!$lastState || !isset($lastState['entered_at'])) return 'N';
+        if (!$lastLog) return 'N';
+
+        $lat1 = deg2rad((float) $lastLog->latitude);
+        $lng1 = deg2rad((float) $lastLog->longitude);
+        $lat2 = deg2rad($lat);
+        $lng2 = deg2rad($lng);
+
+        $dLng = $lng2 - $lng1;
+        $y = sin($dLng) * cos($lat2);
+        $x = cos($lat1) * sin($lat2) - sin($lat1) * cos($lat2) * cos($dLng);
+
+        $bearing = rad2deg(atan2($y, $x));
+        $bearing = fmod($bearing + 360, 360);
 
         $dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
-        $bearing = rad2deg(atan2(
-            sin(deg2rad($lng)) - sin(deg2rad($lng)),
-            cos(deg2rad($lat)) * sin(deg2rad($lat)) - sin(deg2rad($lat)) * cos(deg2rad($lat)) * cos(deg2rad($lng))
-        ));
-        $bearing = fmod($bearing + 360, 360);
         return $dirs[round($bearing / 45) % 8];
     }
 

@@ -73,4 +73,9 @@ class SettingsController extends Controller
     {
         return response()->json($this->settingRepo->getByGroup($group));
     }
+
+    public function public(): JsonResponse
+    {
+        return response()->json($this->settingRepo->getPublicSettings());
+    }
 }

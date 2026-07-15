@@ -135,12 +135,28 @@ class ReportRepository extends BaseRepository implements ReportRepositoryInterfa
         return $report->fresh();
     }
 
+    public function findAllAdmin(?string $status = null, int $perPage = 20): LengthAwarePaginator
+    {
+        $query = $this->model->with(['crimeType', 'category', 'status', 'user']);
+
+        if ($status === 'pending') {
+            $query->where('is_verified', false)
+                ->where(fn($q) => $q->whereDoesntHave('status')
+                    ->orWhereHas('status', fn($s) => $s->where('slug', '!=', 'rechazado')));
+        } elseif ($status === 'verified') {
+            $query->where('is_verified', true);
+        } elseif ($status === 'rejected') {
+            $query->whereHas('status', fn($q) => $q->where('slug', 'rechazado'));
+        }
+
+        return $query->latest()->paginate($perPage);
+    }
+
     public function reject(int $id, int $reviewedBy): Report
     {
         $report = $this->findOrFail($id);
         $report->update([
-            'is_verified' => false,
-            'verified_at' => now(),
+            'rejected_at' => now(),
             'verified_by' => $reviewedBy,
         ]);
         return $report->fresh();

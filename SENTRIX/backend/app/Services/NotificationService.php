@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\UserRole;
 use App\Models\User;
 use App\Models\RiskZone;
 use App\Notifications\GeofenceAlert;
@@ -23,7 +24,7 @@ class NotificationService
 
     public function sendPanicAlertToAuthorities(User $citizen): void
     {
-        $authorities = User::whereHas('roles', fn($q) => $q->where('name', 'Autoridad'))->get();
+        $authorities = User::whereHas('roles', fn($q) => $q->where('name', UserRole::Autoridad->value))->get();
         Notification::send($authorities, new PanicAlertReceived($citizen));
     }
 }

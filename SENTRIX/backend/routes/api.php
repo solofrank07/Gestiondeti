@@ -25,11 +25,11 @@ Route::get('health', function () {
 Route::prefix('v1')->group(function () {
 
     // Auth - Public
-    Route::post('auth/register', [AuthController::class, 'register']);
-    Route::post('auth/login', [AuthController::class, 'login']);
-    Route::post('auth/forgot-password', [AuthController::class, 'forgotPassword']);
-    Route::post('auth/reset-password', [AuthController::class, 'resetPassword']);
-    Route::post('auth/refresh', [AuthController::class, 'refresh']);
+    Route::post('auth/register', [AuthController::class, 'register'])->middleware('throttle:5,60');
+    Route::post('auth/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
+    Route::post('auth/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:3,60');
+    Route::post('auth/reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:3,60');
+    Route::post('auth/refresh', [AuthController::class, 'refresh'])->middleware('throttle:10,1');
 
     // Public map
     Route::get('map/risk-zones', [MapController::class, 'getRiskZones']);
@@ -49,8 +49,14 @@ Route::prefix('v1')->group(function () {
     // Reports (public read — nearby only)
     Route::get('reports/nearby', [ReportController::class, 'nearby']);
 
+    // Public settings
+    Route::get('settings/public', [\App\Controllers\Admin\SettingsController::class, 'public']);
+
     // Authenticated
     Route::middleware('auth:sanctum')->group(function () {
+
+        // Crime types (authenticated)
+        Route::get('crime-types', [\App\Controllers\CrimeTypeController::class, 'index']);
 
         // Auth profile & security
         Route::get('auth/profile', [AuthController::class, 'profile']);
@@ -118,7 +124,7 @@ Route::prefix('v1')->group(function () {
             Route::get('admin/risk-zones/{id}', [RiskZoneController::class, 'show']);
             Route::put('admin/risk-zones/{id}', [RiskZoneController::class, 'update']);
             Route::delete('admin/risk-zones/{id}', [RiskZoneController::class, 'destroy']);
-            Route::get('risk-levels', [RiskZoneController::class, 'riskLevels']);
+            Route::get('admin/risk-levels', [RiskZoneController::class, 'riskLevels']);
             // Admin report management
             Route::get('admin/reports', [\App\Controllers\Admin\ReportController::class, 'index']);
         });

@@ -10,6 +10,7 @@ class GeofenceLog extends Model
     protected $fillable = [
         'user_id', 'risk_zone_id', 'event',
         'latitude', 'longitude', 'distance_to_center',
+        'duration_seconds', 'heading', 'speed_ms',
         'notification_sent', 'event_at',
     ];
 
@@ -19,6 +20,8 @@ class GeofenceLog extends Model
             'latitude' => 'decimal:7',
             'longitude' => 'decimal:7',
             'distance_to_center' => 'decimal:2',
+            'duration_seconds' => 'integer',
+            'speed_ms' => 'decimal:2',
             'notification_sent' => 'json',
             'event_at' => 'datetime',
         ];

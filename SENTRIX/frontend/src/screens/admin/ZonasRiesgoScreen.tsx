@@ -86,6 +86,10 @@ export default function ZonasRiesgoScreen() {
       Alert.alert('Error', 'El nombre es obligatorio.');
       return;
     }
+    if (!form.description.trim()) {
+      Alert.alert('Error', 'La descripción es obligatoria.');
+      return;
+    }
     const payload: any = { ...form };
     if (selectedLevel) payload.risk_level_id = selectedLevel;
 
@@ -203,7 +207,7 @@ export default function ZonasRiesgoScreen() {
               <TextInput
                 style={{ backgroundColor: '#f7f9fc', borderRadius: 10, padding: 14, fontSize: 15, fontFamily: 'Inter', marginBottom: 16, borderWidth: 1, borderColor: '#e0e3e6', minHeight: 60, textAlignVertical: 'top' }}
                 value={form.description} onChangeText={(v) => setForm({ ...form, description: v })}
-                placeholder="Opcional"
+                placeholder="Describe la zona de riesgo"
                 multiline
               />
 

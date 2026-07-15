@@ -6,6 +6,9 @@ use App\Helpers\GeoHelper;
 use App\Interfaces\HeatmapCacheRepositoryInterface;
 use App\Interfaces\RiskZoneRepositoryInterface;
 use App\Models\HeatmapCache;
+use App\Models\RiskHistory;
+use App\Services\DashboardService;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class HeatmapService
@@ -173,9 +176,22 @@ class HeatmapService
             $levelModel = \App\Models\RiskLevel::where('slug', $level->value)->first();
             if ($levelModel) {
                 $this->riskZoneRepo->updateScore($zone->id, $score, $levelModel->id);
+                RiskHistory::create([
+                    'risk_zone_id' => $zone->id,
+                    'risk_score' => $score,
+                    'risk_level_id' => $levelModel->id,
+                    'crime_count' => $zone->crime_count ?? 0,
+                    'reports_count' => ($zone->citizen_reports_count ?? 0) + ($zone->official_reports_count ?? 0),
+                    'calculated_at' => now(),
+                ]);
             }
         }
         $this->cacheRepo->clearExpired();
+
+        // Clear dashboard cache
+        app(DashboardService::class)->clearCache();
+        // Clear heatmap tile cache
+        Cache::forget('heatmap:tiles:*');
     }
 
     public function invalidateCacheForZone(float $lat, float $lng, float $radiusMeters): int
@@ -185,15 +201,20 @@ class HeatmapService
 
     public function prewarmPopularTiles(int $regionId = 1): void
     {
-        $popularZooms = [10, 12, 14];
-        $tilesByZoom = [
-            10 => ['x' => [460, 465], 'y' => [310, 315]],
-            12 => ['x' => [1840, 1860], 'y' => [1240, 1260]],
-            14 => ['x' => [7360, 7420], 'y' => [4960, 5020]],
-        ];
+        $regions = config('sentrix.heatmap.prewarm_regions', []);
+
+        // Use regionId to select region, default to first available
+        $regionKey = array_keys($regions)[$regionId - 1] ?? null;
+        if (!$regionKey || !isset($regions[$regionKey])) {
+            Log::warning("No prewarm config for region ID {$regionId}");
+            return;
+        }
+
+        $region = $regions[$regionKey];
+        $popularZooms = $region['zooms'] ?? [10, 12, 14];
 
         foreach ($popularZooms as $zoom) {
-            $range = $tilesByZoom[$zoom] ?? null;
+            $range = $region['tiles'][$zoom] ?? null;
             if (!$range) continue;
             for ($x = $range['x'][0]; $x <= $range['x'][1]; $x++) {
                 for ($y = $range['y'][0]; $y <= $range['y'][1]; $y++) {

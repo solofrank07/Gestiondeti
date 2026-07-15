@@ -29,7 +29,8 @@ export default function MapScreen() {
   });
 
   const { isLoading } = useRiskZones(bounds);
-  const riskZones = useMapStore((s) => s.riskZones);
+  const riskZonesRaw = useMapStore((s) => s.riskZones);
+  const riskZones = Array.isArray(riskZonesRaw) ? riskZonesRaw : [];
   const { data: nearbyReports } = useNearbyReports(region.latitude, region.longitude);
   const reports = Array.isArray(nearbyReports) ? nearbyReports : [];
 

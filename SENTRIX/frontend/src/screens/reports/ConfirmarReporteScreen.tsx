@@ -1,25 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView, Alert } from 'react-native';
 import { router } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { useReportStore } from '@/store/reportStore';
+import { panicService } from '@/services/panicService';
 import { reportService } from '@/services/reportService';
 import { goBack } from '@/utils/navigation';
-
-const crimeLabels: Record<string, string> = {
-  hurto: 'Hurto', 'robo-agravado': 'Asalto',
-  extorsion: 'Extorsión', sicariato: 'Homicidio', 'zona-insegura': 'Vandalismo',
-};
-
-const crimeTypeIdMap: Record<string, number> = {
-  hurto: 2, 'robo-agravado': 3, extorsion: 9,
-  sicariato: 7, 'zona-insegura': 12,
-};
+import { CrimeType } from '@/types/report';
 
 export default function ConfirmarReporteScreen() {
   const queryClient = useQueryClient();
   const { draft, resetDraft } = useReportStore();
   const [sending, setSending] = useState(false);
+  const [crimeTypes, setCrimeTypes] = useState<CrimeType[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const api = (await import('@/services/api')).default;
+        const res = await api.get('/crime-types');
+        setCrimeTypes(res.data);
+      } catch (e) {
+        console.error('Failed to load crime types', e);
+      }
+    })();
+  }, []);
+
+  const currentCrimeType = crimeTypes.find(ct => ct.slug === draft.crimeType);
 
   const handleSubmit = async () => {
     if (!draft.lat || !draft.lng || !draft.crimeType) return;
@@ -32,14 +39,14 @@ export default function ConfirmarReporteScreen() {
       })) as any;
 
       const created = await reportService.createReport({
-        title: crimeLabels[draft.crimeType] || draft.crimeType,
+        title: currentCrimeType?.name ?? draft.crimeType,
         description: draft.description || '',
         latitude: draft.lat,
         longitude: draft.lng,
         address: draft.address,
         priority: 'media',
         incident_date: draft.incidentDate ? new Date(draft.incidentDate).toISOString() : new Date().toISOString(),
-        crime_type_id: crimeTypeIdMap[draft.crimeType] || undefined,
+        crime_type_id: currentCrimeType?.id ?? undefined,
         radius: draft.radius || undefined,
         media: mediaFiles.length > 0 ? mediaFiles : undefined,
       });
@@ -53,6 +60,24 @@ export default function ConfirmarReporteScreen() {
       Alert.alert('Error', e?.response?.data?.message || 'Error al enviar reporte');
     } finally {
       setSending(false);
+    }
+  };
+
+  const handlePanic = async () => {
+    if (!draft.lat || !draft.lng) {
+      Alert.alert('Ubicación requerida', 'Debes seleccionar una ubicación en el mapa primero.');
+      return;
+    }
+    try {
+      await panicService.create({
+        latitude: draft.lat,
+        longitude: draft.lng,
+        address: draft.address,
+        message: draft.description || 'Alerta de pánico desde creación de reporte',
+      });
+      Alert.alert('Alerta enviada', 'Las autoridades han sido notificadas.');
+    } catch (e: any) {
+      Alert.alert('Error', e?.response?.data?.message || 'Error al enviar alerta de pánico');
     }
   };
 
@@ -92,7 +117,7 @@ export default function ConfirmarReporteScreen() {
             marginBottom: 8,
           }}>
             <Text style={{ fontFamily: 'Inter', fontSize: 14, color: '#03224d', fontWeight: '600' }}>
-              {crimeLabels[draft.crimeType] || draft.crimeType}
+              {currentCrimeType?.name ?? draft.crimeType}
             </Text>
           </View>
         )}
@@ -128,6 +153,7 @@ export default function ConfirmarReporteScreen() {
 
         {/* Panic button */}
         <TouchableOpacity
+          onPress={handlePanic}
           style={{
             backgroundColor: '#c55a11', paddingVertical: 16, borderRadius: 12,
             alignItems: 'center', marginBottom: 40,

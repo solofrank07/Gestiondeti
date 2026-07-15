@@ -29,6 +29,7 @@ class Report extends Model
             'incident_date' => 'datetime',
             'is_verified' => 'boolean',
             'verified_at' => 'datetime',
+            'rejected_at' => 'datetime',
             'auto_approved' => 'boolean',
         ];
     }

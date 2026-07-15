@@ -21,4 +21,5 @@ interface ReportRepositoryInterface extends BaseRepositoryInterface
     public function paginateByUser(int $userId, int $perPage = 15): LengthAwarePaginator;
     public function verify(int $id, int $verifiedBy): Report;
     public function reject(int $id, int $reviewedBy): Report;
+    public function findAllAdmin(?string $status = null, int $perPage = 20): LengthAwarePaginator;
 }

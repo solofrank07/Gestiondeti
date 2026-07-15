@@ -176,7 +176,7 @@ export default function DashboardHomeScreen() {
               <View className="flex-row justify-between items-center">
                 <Text className="text-sentrix-900 font-medium flex-1">{zone.name}</Text>
                 <View className="bg-alert-subtle px-3 py-1 rounded-full">
-                  <Text className="text-alert font-bold">{(Number(zone.risk_score) || 0).toFixed(0)}</Text>
+                  <Text className="text-alert font-bold">{zone.risk_score.toFixed(0)}</Text>
                 </View>
               </View>
               <Text className="text-sentrix-400 text-sm mt-1">{zone.level}</Text>

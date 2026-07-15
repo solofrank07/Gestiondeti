@@ -2,11 +2,13 @@
 
 namespace App\Services;
 
+use App\Enums\UserRole;
 use App\Interfaces\UserRepositoryInterface;
 use App\Interfaces\RoleRepositoryInterface;
 use App\Models\User;
 use App\Notifications\PasswordReset;
 use Illuminate\Auth\Events\PasswordReset as PasswordResetEvent;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
@@ -22,15 +24,17 @@ class AuthService
 
     public function register(array $data): array
     {
-        $data['password'] = Hash::make($data['password']);
-        $user = $this->userRepo->create($data);
-        $role = $this->roleRepo->findByName('Ciudadano');
-        if ($role) {
-            $user->roles()->attach($role->id);
-        }
-        $user->load('roles');
-        $token = $user->createToken('sentrix-token')->plainTextToken;
-        return ['user' => $user, 'token' => $token];
+        return DB::transaction(function () use ($data) {
+            $data['password'] = Hash::make($data['password']);
+            $user = $this->userRepo->create($data);
+            $role = $this->roleRepo->findByName(UserRole::Ciudadano->value);
+            if ($role) {
+                $user->roles()->attach($role->id);
+            }
+            $user->load('roles');
+            $token = $user->createToken('sentrix-token')->plainTextToken;
+            return ['user' => $user, 'token' => $token];
+        });
     }
 
     public function login(string $email, string $password): array
@@ -81,7 +85,7 @@ class AuthService
         return $user->fresh();
     }
 
-    public function forgotPassword(string $email): string
+    public function forgotPassword(string $email): void
     {
         $user = $this->userRepo->findByEmail($email);
         if (!$user) {
@@ -89,7 +93,6 @@ class AuthService
         }
         $token = Password::createToken($user);
         $user->notify(new PasswordReset($token));
-        return $token;
     }
 
     public function resetPassword(array $data): void

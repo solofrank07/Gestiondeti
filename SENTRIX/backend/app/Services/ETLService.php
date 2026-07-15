@@ -76,6 +76,8 @@ class ETLService
             $skipped = 0;
 
             DB::beginTransaction();
+            $batch = [];
+            $batchSize = 100;
             foreach (array_chunk($data, 200) as $chunk) {
                 foreach ($chunk as $item) {
                     $normalized = $this->normalizeRow($item);
@@ -89,24 +91,31 @@ class ETLService
                         continue;
                     }
 
-                    try {
-                        OfficialReport::create([
-                            'external_id'  => $item['id'] ?? uniqid("{$source}_"),
-                            'source'       => $source,
-                            'title'        => $normalized['title'],
-                            'description'  => $normalized['description'] ?? '',
-                            'latitude'     => $normalized['latitude'],
-                            'longitude'    => $normalized['longitude'],
-                            'incident_date'=> $normalized['incident_date'],
-                            'severity'     => $normalized['severity'] ?? null,
-                            'raw_data'     => $item,
-                            'imported_at'  => now(),
-                        ]);
-                        $imported++;
-                    } catch (\Exception $e) {
-                        $errors[] = ['item_id' => $item['id'] ?? null, 'error' => $e->getMessage()];
+                    $batch[] = [
+                        'external_id'  => $item['id'] ?? uniqid("{$source}_", true),
+                        'source'       => $source,
+                        'title'        => $normalized['title'],
+                        'description'  => $normalized['description'] ?? '',
+                        'latitude'     => $normalized['latitude'],
+                        'longitude'    => $normalized['longitude'],
+                        'incident_date'=> $normalized['incident_date'],
+                        'severity'     => $normalized['severity'] ?? null,
+                        'raw_data'     => $item,
+                        'imported_at'  => now(),
+                        'created_at'   => now(),
+                        'updated_at'   => now(),
+                    ];
+                    $imported++;
+
+                    if (count($batch) >= $batchSize) {
+                        OfficialReport::insert($batch);
+                        $batch = [];
                     }
                 }
+            }
+
+            if (!empty($batch)) {
+                OfficialReport::insert($batch);
             }
             DB::commit();
 

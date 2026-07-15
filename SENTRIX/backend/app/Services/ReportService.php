@@ -6,6 +6,7 @@ use App\Interfaces\ReportRepositoryInterface;
 use App\Models\Report;
 use App\Models\ReportStatus;
 use App\Models\User;
+use App\Notifications\ReportVerified;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -23,6 +24,7 @@ class ReportService
     public function create(array $data, User $user): Report
     {
         $data['user_id'] = $user->id;
+        $data['reporter_ip'] = request()->ip();
         $data['description'] = $data['description'] ?? 'Sin descripcion';
         $data['title'] = $data['title'] ?? 'Reporte';
         $report = $this->reportRepo->create($data);
@@ -46,7 +48,9 @@ class ReportService
 
     private function resolveStatusId(string $slug): ?int
     {
-        return ReportStatus::where('slug', $slug)->value('id');
+        return Cache::remember('report_status_id:' . $slug, 86400, function () use ($slug) {
+            return ReportStatus::where('slug', $slug)->value('id');
+        });
     }
 
     public function update(int $id, array $data): Report
@@ -99,6 +103,8 @@ class ReportService
 
         $nearbyHotspot = $this->hotspotService->isHotspot((float) $report->latitude, (float) $report->longitude);
         $this->hotspotService->promoteToHotspot($report, $nearbyHotspot);
+
+        $report->user->notify(new ReportVerified($report->id));
 
         return $report->fresh(['crimeType', 'category', 'status']);
     }

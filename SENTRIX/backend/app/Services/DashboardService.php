@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Interfaces\ReportRepositoryInterface;
 use App\Interfaces\RiskZoneRepositoryInterface;
+use App\Models\Province;
+use Illuminate\Support\Facades\Cache;
 
 class DashboardService
 {
@@ -14,35 +16,40 @@ class DashboardService
 
     public function getSummary(): array
     {
-        $stats = $this->reportRepo->getStatistics();
-        $criticalZones = $this->riskZoneRepo->getCriticalZones(5);
+        return Cache::remember('dashboard:summary', 300, function () {
+            $stats = $this->reportRepo->getStatistics();
+            $criticalZones = $this->riskZoneRepo->getCriticalZones(5);
 
-        $total = $stats['total'] ?? 0;
-        $verified = $stats['verified'] ?? 0;
-        $pending = $stats['pending'] ?? 0;
-        $verificationRate = $total > 0 ? round(($verified / $total) * 100, 1) : 0;
+            $total = $stats['total'] ?? 0;
+            $verified = $stats['verified'] ?? 0;
+            $pending = $stats['pending'] ?? 0;
+            $verificationRate = $total > 0 ? round(($verified / $total) * 100, 1) : 0;
 
-        return [
-            'total_reports'       => $total,
-            'verified_reports'    => $verified,
-            'pending_reports'     => $pending,
-            'verification_rate'   => $verificationRate,
-            'critical_zones_count'=> $criticalZones->count(),
-            'active_zones_count'  => $this->riskZoneRepo->getActiveZones()->count(),
-            'critical_zones'      => $criticalZones->map(fn($z) => [
-                'id'         => $z->id,
-                'name'       => $z->name,
-                'risk_score' => (float) $z->risk_score,
-                'level'      => $z->riskLevel?->name,
-                'latitude'   => (float) $z->latitude,
-                'longitude'  => (float) $z->longitude,
-            ]),
-        ];
+            return [
+                'total_reports'       => $total,
+                'verified_reports'    => $verified,
+                'pending_reports'     => $pending,
+                'verification_rate'   => $verificationRate,
+                'critical_zones_count'=> $criticalZones->count(),
+                'active_zones_count'  => $this->riskZoneRepo->getActiveZones()->count(),
+                'critical_zones'      => $criticalZones->map(fn($z) => [
+                    'id'         => $z->id,
+                    'name'       => $z->name,
+                    'risk_score' => (float) $z->risk_score,
+                    'level'      => $z->riskLevel?->name,
+                    'latitude'   => (float) $z->latitude,
+                    'longitude'  => (float) $z->longitude,
+                ]),
+            ];
+        });
     }
 
     public function getStatistics(array $filters = []): array
     {
-        return $this->reportRepo->getStatistics($filters);
+        $cacheKey = 'dashboard:stats:' . md5(json_encode($filters));
+        return Cache::remember($cacheKey, 300, function () use ($filters) {
+            return $this->reportRepo->getStatistics($filters);
+        });
     }
 
     public function getCrimeTypeDistribution(array $filters = []): array
@@ -57,47 +64,55 @@ class DashboardService
 
     public function getZoneStatistics(): array
     {
-        $total = $this->riskZoneRepo->getActiveZones();
-        $zones = $this->riskZoneRepo->getCriticalZones(999);
+        return Cache::remember('dashboard:zone-stats', 600, function () {
+            $total = $this->riskZoneRepo->getActiveZones();
+            $zones = $this->riskZoneRepo->getCriticalZones(999);
 
-        $byLevel = $total->groupBy(fn($z) => $z->riskLevel?->slug ?? 'unknown')
-            ->map(fn($group, $level) => [
-                'level' => $level,
-                'count' => $group->count(),
-                'avg_score' => round($group->avg('risk_score'), 2),
-            ])->values()->toArray();
+            $byLevel = $total->groupBy(fn($z) => $z->riskLevel?->slug ?? 'unknown')
+                ->map(fn($group, $level) => [
+                    'level' => $level,
+                    'count' => $group->count(),
+                    'avg_score' => round($group->avg('risk_score'), 2),
+                ])->values()->toArray();
 
-        $avgScore = $total->avg('risk_score');
-        $maxScore = $total->max('risk_score');
+            $avgScore = $total->avg('risk_score');
+            $maxScore = $total->max('risk_score');
 
-        return [
-            'total_zones'    => $total->count(),
-            'avg_risk_score' => round($avgScore, 2),
-            'max_risk_score' => round($maxScore, 2),
-            'by_level'       => $byLevel,
-        ];
+            return [
+                'total_zones'    => $total->count(),
+                'avg_risk_score' => round($avgScore, 2),
+                'max_risk_score' => round($maxScore, 2),
+                'by_level'       => $byLevel,
+            ];
+        });
     }
 
     public function getFullDashboard(array $filters = []): array
     {
-        $period = $filters['period'] ?? 'day';
-        $from = $filters['from'] ?? now()->subDays(30)->toDateString();
-        $to = $filters['to'] ?? now()->toDateString();
-        $filtersForStats = array_filter([
-            'from' => $from,
-            'to' => $to,
-            'province_id' => $filters['province_id'] ?? null,
-            'district_id' => $filters['district_id'] ?? null,
-        ]);
+        $cacheKey = 'dashboard:full:' . md5(json_encode($filters));
+        return Cache::remember($cacheKey, 300, function () use ($filters) {
+            $period = $filters['period'] ?? 'day';
+            $from = $filters['from'] ?? now()->subDays(30)->toDateString();
+            $to = $filters['to'] ?? now()->toDateString();
+            $filtersForStats = array_filter([
+                'from' => $from,
+                'to' => $to,
+                'province_id' => $filters['province_id'] ?? null,
+                'district_id' => $filters['district_id'] ?? null,
+            ]);
 
-        return [
-            'summary'       => $this->getSummary(),
-            'statistics'    => $this->getStatistics($filtersForStats),
-            'evolution'     => $this->getReportsByPeriod($period, $from, $to),
-            'crime_types'   => $this->getCrimeTypeDistribution($filtersForStats),
-            'zone_stats'    => $this->getZoneStatistics(),
-            'provinces'     => [],
-        ];
+            return [
+                'summary'       => $this->getSummary(),
+                'statistics'    => $this->getStatistics($filtersForStats),
+                'evolution'     => $this->getReportsByPeriod($period, $from, $to),
+                'crime_types'   => $this->getCrimeTypeDistribution($filtersForStats),
+                'zone_stats'    => $this->getZoneStatistics(),
+                'provinces'     => Province::select('id', 'name', 'region_id')
+                    ->orderBy('name')
+                    ->get()
+                    ->toArray(),
+            ];
+        });
     }
 
     public function getReportsByProvince(int $regionId): array
@@ -112,11 +127,22 @@ class DashboardService
 
     public function getEvolution(int $days = 30): array
     {
-        $start = now()->subDays($days);
-        $reports = $this->reportRepo->findByDateRange($start->toDateString(), now()->toDateString());
-        return $reports->groupBy(fn($r) => $r->incident_date?->format('Y-m-d'))
-            ->map(fn($group, $date) => ['date' => $date, 'count' => $group->count()])
-            ->values()
-            ->toArray();
+        return Cache::remember('dashboard:evolution:' . $days, 600, function () use ($days) {
+            $start = now()->subDays($days);
+            $reports = $this->reportRepo->findByDateRange($start->toDateString(), now()->toDateString());
+            return $reports->groupBy(fn($r) => $r->incident_date?->format('Y-m-d'))
+                ->map(fn($group, $date) => ['date' => $date, 'count' => $group->count()])
+                ->values()
+                ->toArray();
+        });
+    }
+
+    public function clearCache(): void
+    {
+        Cache::forget('dashboard:summary');
+        Cache::forget('dashboard:zone-stats');
+        Cache::forget('dashboard:evolution:' . 30);
+        // Clear all dashboard stats and full caches (wildcard not supported, clear common ones)
+        Cache::forget('dashboard:stats:' . md5(json_encode([])));
     }
 }

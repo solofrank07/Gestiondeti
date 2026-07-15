@@ -8,6 +8,9 @@ use App\Services\AIService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * @OA\Tag(name="AI", description="Heurísticas locales de inteligencia artificial")
+ */
 class AIController extends Controller
 {
     public function __construct(private AIService $aiService) {}

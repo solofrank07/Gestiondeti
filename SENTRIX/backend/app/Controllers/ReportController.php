@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Requests\StoreReportRequest;
+use App\Requests\UpdateReportRequest;
 use App\Resources\ReportResource;
 use App\Services\ReportService;
 use Illuminate\Http\JsonResponse;
@@ -109,9 +110,14 @@ class ReportController extends Controller
      *     @OA\Response(response=404, description="No encontrado")
      * )
      */
-    public function update(Request $request, int $id): JsonResponse
+    public function update(UpdateReportRequest $request, int $id): JsonResponse
     {
-        $report = $this->reportService->update($id, $request->all());
+        $report = $this->reportService->findById($id);
+        if (!$report) {
+            return response()->json(['message' => 'Reporte no encontrado.'], 404);
+        }
+        $this->authorize('update', $report);
+        $report = $this->reportService->update($id, $request->validated());
         return response()->json(ReportResource::make($report));
     }
 
@@ -128,6 +134,11 @@ class ReportController extends Controller
      */
     public function destroy(int $id): JsonResponse
     {
+        $report = $this->reportService->findById($id);
+        if (!$report) {
+            return response()->json(['message' => 'Reporte no encontrado.'], 404);
+        }
+        $this->authorize('delete', $report);
         $this->reportService->delete($id);
         return response()->json(['message' => 'Reporte eliminado.']);
     }
