@@ -1,22 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, TextInput, ScrollView, Platform, Alert } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, TextInput, ScrollView, Platform, Alert, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
 import { useReportStore } from '@/store/reportStore';
 import { goBack } from '@/utils/navigation';
-import { CrimeType } from '@/types/report';
-import api from '@/services/api';
+import { useCrimeTypes } from '@/hooks/useCrimeTypes';
 
 export default function ReportePaso2Screen() {
   const { draft, setCrimeType, setDescription, setIncidentDate } = useReportStore();
   const [selected, setSelected] = useState(draft.crimeType || '');
   const [desc, setDesc] = useState(draft.description || '');
   const [date, setDate] = useState(draft.incidentDate || new Date().toISOString().split('T')[0]);
-  const [crimeTypes, setCrimeTypes] = useState<CrimeType[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    api.get('/crime-types').then(res => setCrimeTypes(res.data)).catch(console.error).finally(() => setLoading(false));
-  }, []);
+  const { data: crimeTypes, isLoading } = useCrimeTypes();
 
   const handleSelect = (id: string) => {
     setSelected(id);
@@ -59,10 +53,10 @@ export default function ReportePaso2Screen() {
         </Text>
 
         {/* Crime type options */}
-        {loading ? (
-          <Text style={{ fontFamily: 'Inter', fontSize: 14, color: '#747780' }}>Cargando tipos de incidente...</Text>
+        {isLoading ? (
+          <ActivityIndicator size="small" color="#03224d" />
         ) : (
-          crimeTypes.map((ct) => {
+          (crimeTypes ?? []).map((ct: any) => {
             const isSelected = selected === ct.slug;
             return (
               <TouchableOpacity

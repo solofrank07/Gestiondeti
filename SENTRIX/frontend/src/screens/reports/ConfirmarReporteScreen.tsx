@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView, Alert } from 'react-native';
 import { router } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
@@ -6,20 +6,15 @@ import { useReportStore } from '@/store/reportStore';
 import { panicService } from '@/services/panicService';
 import { reportService } from '@/services/reportService';
 import { goBack } from '@/utils/navigation';
-import { CrimeType } from '@/types/report';
-import api from '@/services/api';
+import { useCrimeTypes } from '@/hooks/useCrimeTypes';
 
 export default function ConfirmarReporteScreen() {
   const queryClient = useQueryClient();
   const { draft, resetDraft } = useReportStore();
   const [sending, setSending] = useState(false);
-  const [crimeTypes, setCrimeTypes] = useState<CrimeType[]>([]);
+  const { data: crimeTypes } = useCrimeTypes();
 
-  useEffect(() => {
-    api.get('/crime-types').then(res => setCrimeTypes(res.data)).catch(console.error);
-  }, []);
-
-  const currentCrimeType = crimeTypes.find(ct => ct.slug === draft.crimeType);
+  const currentCrimeType = (crimeTypes ?? []).find((ct: any) => ct.slug === draft.crimeType);
 
   const handleSubmit = async () => {
     if (!draft.lat || !draft.lng || !draft.crimeType) return;
