@@ -32,7 +32,7 @@ class DashboardService
             'critical_zones'      => $criticalZones->map(fn($z) => [
                 'id'         => $z->id,
                 'name'       => $z->name,
-                'risk_score' => $z->risk_score,
+                'risk_score' => (float) $z->risk_score,
                 'level'      => $z->riskLevel?->name,
                 'latitude'   => (float) $z->latitude,
                 'longitude'  => (float) $z->longitude,

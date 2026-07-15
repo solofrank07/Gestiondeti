@@ -8,6 +8,8 @@ interface Props {
 }
 
 export default function RiskZonePolygon({ zone }: Props) {
+  const riskScore = Number(zone.risk_score) || 0;
+
   if (zone.polygons && zone.polygons.length > 0) {
     return (
       <>
@@ -23,10 +25,10 @@ export default function RiskZonePolygon({ zone }: Props) {
         <Marker
           coordinate={{ latitude: zone.latitude, longitude: zone.longitude }}
           title={zone.name}
-          description={`Riesgo: ${zone.risk_score.toFixed(0)}/100`}
+          description={`Riesgo: ${riskScore.toFixed(0)}/100`}
         >
           <View className="px-2 py-1 rounded-full" style={{ backgroundColor: zone.color }}>
-            <Text className="text-white text-xs font-bold">{zone.risk_score.toFixed(0)}</Text>
+            <Text className="text-white text-xs font-bold">{riskScore.toFixed(0)}</Text>
           </View>
         </Marker>
       </>
@@ -45,10 +47,10 @@ export default function RiskZonePolygon({ zone }: Props) {
       <Marker
         coordinate={{ latitude: zone.latitude, longitude: zone.longitude }}
         title={zone.name}
-        description={`Riesgo: ${zone.risk_score.toFixed(0)}/100`}
+        description={`Riesgo: ${riskScore.toFixed(0)}/100`}
       >
         <View className="px-2 py-1 rounded-full" style={{ backgroundColor: zone.color }}>
-          <Text className="text-white text-xs font-bold">{zone.risk_score.toFixed(0)}</Text>
+          <Text className="text-white text-xs font-bold">{riskScore.toFixed(0)}</Text>
         </View>
       </Marker>
     </>

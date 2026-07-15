@@ -59,7 +59,7 @@ class RiskZoneRepository extends BaseRepository implements RiskZoneRepositoryInt
     public function getZonesInBounds(float $north, float $south, float $east, float $west): Collection
     {
         return $this->model
-            ->with('riskLevel')
+            ->with(['riskLevel', 'polygons.points'])
             ->whereBetween('latitude', [$south, $north])
             ->whereBetween('longitude', [$west, $east])
             ->where('is_active', true)

@@ -94,6 +94,7 @@ Route::prefix('v1')->group(function () {
             Route::get('dashboard/evolution', [DashboardController::class, 'evolution']);
             Route::get('dashboard/critical-zones', [DashboardController::class, 'criticalZones']);
             Route::post('reports/{id}/verify', [ReportController::class, 'verify']);
+            Route::post('reports/{id}/reject', [ReportController::class, 'reject']);
             Route::get('panic/active', [PanicController::class, 'active']);
             Route::post('panic/{id}/attend', [PanicController::class, 'attend']);
         });

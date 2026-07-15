@@ -153,7 +153,7 @@ class ReportController extends Controller
         ]);
 
         $reports = $this->reportService->getNearby(
-            $request->lat, $request->lng, $request->radius ?? 1
+            $request->lat, $request->lng, $request->radius ?? 1, onlyApproved: true
         );
 
         return response()->json(ReportResource::collection($reports));
@@ -173,6 +173,23 @@ class ReportController extends Controller
     public function verify(int $id, Request $request): JsonResponse
     {
         $report = $this->reportService->verify($id, $request->user()->id);
+        return response()->json(ReportResource::make($report));
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/v1/reports/{id}/reject",
+     *     tags={"Reportes"},
+     *     summary="Rechazar un reporte (Autoridad/Admin)",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response=200, description="Reporte rechazado"),
+     *     @OA\Response(response=403, description="No autorizado")
+     * )
+     */
+    public function reject(int $id, Request $request): JsonResponse
+    {
+        $report = $this->reportService->reject($id, $request->user()->id);
         return response()->json(ReportResource::make($report));
     }
 }

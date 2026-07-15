@@ -24,14 +24,19 @@ class ReportRepository extends BaseRepository implements ReportRepositoryInterfa
         return $this->model->whereBetween('incident_date', [$start, $end])->get();
     }
 
-    public function findByLocation(float $lat, float $lng, float $radiusKm): Collection
+    public function findByLocation(float $lat, float $lng, float $radiusKm, bool $onlyApproved = false): Collection
     {
         $latDelta = $radiusKm / 111;
         $lngDelta = $radiusKm / (111 * cos(deg2rad($lat)));
-        return $this->model
+        $query = $this->model
             ->whereBetween('latitude', [$lat - $latDelta, $lat + $latDelta])
-            ->whereBetween('longitude', [$lng - $lngDelta, $lng + $lngDelta])
-            ->get();
+            ->whereBetween('longitude', [$lng - $lngDelta, $lng + $lngDelta]);
+
+        if ($onlyApproved) {
+            $query->where('is_verified', true);
+        }
+
+        return $query->get();
     }
 
     public function getPendingVerification(): Collection
@@ -126,6 +131,17 @@ class ReportRepository extends BaseRepository implements ReportRepositoryInterfa
             'is_verified' => true,
             'verified_at' => now(),
             'verified_by' => $verifiedBy,
+        ]);
+        return $report->fresh();
+    }
+
+    public function reject(int $id, int $reviewedBy): Report
+    {
+        $report = $this->findOrFail($id);
+        $report->update([
+            'is_verified' => false,
+            'verified_at' => now(),
+            'verified_by' => $reviewedBy,
         ]);
         return $report->fresh();
     }

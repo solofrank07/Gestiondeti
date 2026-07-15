@@ -3,19 +3,20 @@
 namespace App\Services;
 
 use App\Interfaces\ReportRepositoryInterface;
-use App\Interfaces\RiskZoneRepositoryInterface;
 use App\Models\Report;
+use App\Models\ReportStatus;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 
 class ReportService
 {
     public function __construct(
         private ReportRepositoryInterface $reportRepo,
-        private RiskZoneRepositoryInterface $riskZoneRepo,
+        private HotspotService $hotspotService,
         private MediaService $mediaService,
     ) {}
 
@@ -25,8 +26,27 @@ class ReportService
         $data['description'] = $data['description'] ?? 'Sin descripcion';
         $data['title'] = $data['title'] ?? 'Reporte';
         $report = $this->reportRepo->create($data);
-        $this->riskZoneRepo->findByLocation($data['latitude'], $data['longitude'], 0.5);
-        return $report->load(['crimeType', 'category', 'status']);
+
+        $nearbyHotspot = $this->hotspotService->isHotspot((float) $report->latitude, (float) $report->longitude);
+
+        if ($nearbyHotspot) {
+            $report->update([
+                'status_id' => $this->resolveStatusId('verificado'),
+                'is_verified' => true,
+                'verified_at' => now(),
+                'auto_approved' => true,
+            ]);
+            $this->hotspotService->promoteToHotspot($report, $nearbyHotspot);
+        } else {
+            $report->update(['status_id' => $this->resolveStatusId('pendiente')]);
+        }
+
+        return $report->fresh(['crimeType', 'category', 'status']);
+    }
+
+    private function resolveStatusId(string $slug): ?int
+    {
+        return ReportStatus::where('slug', $slug)->value('id');
     }
 
     public function update(int $id, array $data): Report
@@ -54,14 +74,44 @@ class ReportService
         return $this->reportRepo->paginateByUser($userId, $perPage);
     }
 
-    public function getNearby(float $lat, float $lng, float $radiusKm = 1): Collection
+    public function getNearby(float $lat, float $lng, float $radiusKm = 1, bool $onlyApproved = false): Collection
     {
-        return $this->reportRepo->findByLocation($lat, $lng, $radiusKm);
+        // Mismo criterio que MapService::getRiskZones: TTL corto, solo
+        // amortigua polls repetidos sobre el mismo viewport. Se cachea el
+        // array plano (no los modelos Eloquent: el driver "database"
+        // rompe al deserializar objetos) y se rehidrata sin ir a la BD.
+        $key = sprintf('reports:nearby:%s:%s:%s:%s', round($lat, 3), round($lng, 3), round($radiusKm, 2), $onlyApproved ? 1 : 0);
+
+        $rows = Cache::remember($key, 15, function () use ($lat, $lng, $radiusKm, $onlyApproved) {
+            return $this->reportRepo->findByLocation($lat, $lng, $radiusKm, $onlyApproved)->toArray();
+        });
+
+        return Report::hydrate($rows);
     }
 
     public function verify(int $id, int $verifiedBy): Report
     {
-        return $this->reportRepo->verify($id, $verifiedBy);
+        $report = $this->reportRepo->verify($id, $verifiedBy);
+        $report->update([
+            'status_id' => $this->resolveStatusId('verificado'),
+            'auto_approved' => false,
+        ]);
+
+        $nearbyHotspot = $this->hotspotService->isHotspot((float) $report->latitude, (float) $report->longitude);
+        $this->hotspotService->promoteToHotspot($report, $nearbyHotspot);
+
+        return $report->fresh(['crimeType', 'category', 'status']);
+    }
+
+    public function reject(int $id, int $reviewedBy): Report
+    {
+        $report = $this->reportRepo->reject($id, $reviewedBy);
+        $report->update([
+            'status_id' => $this->resolveStatusId('rechazado'),
+            'auto_approved' => false,
+        ]);
+
+        return $report->fresh(['crimeType', 'category', 'status']);
     }
 
     public function attachMedia(Report $report, UploadedFile $file, string $type = 'image'): void

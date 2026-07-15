@@ -38,7 +38,7 @@ async function sendGeofenceNotifications(result: { total_alerts: number; alerts:
 
     await notificationService.sendLocalNotification(
       `⚠️ Zona ${alert.risk_level.toUpperCase()}`,
-      `"${alert.zone_name}" — Score: ${alert.risk_score.toFixed(0)}/100`,
+      `"${alert.zone_name}" — Score: ${(Number(alert.risk_score) || 0).toFixed(0)}/100`,
       { zone_id: alert.zone_id, type: 'geofence', screen: 'Map' }
     );
 

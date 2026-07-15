@@ -15,6 +15,7 @@ class RiskZone extends Model
         'latitude', 'longitude', 'crime_count', 'citizen_reports_count',
         'official_reports_count', 'boundaries', 'radius_meters',
         'area_km2', 'calculated_at', 'is_active',
+        'incident_count', 'auto_generated', 'last_incident_at',
     ];
 
     protected function casts(): array
@@ -31,6 +32,9 @@ class RiskZone extends Model
             'area_km2' => 'decimal:2',
             'calculated_at' => 'datetime',
             'is_active' => 'boolean',
+            'incident_count' => 'integer',
+            'auto_generated' => 'boolean',
+            'last_incident_at' => 'datetime',
         ];
     }
 
@@ -77,5 +81,10 @@ class RiskZone extends Model
     public function geofenceLogs(): HasMany
     {
         return $this->hasMany(GeofenceLog::class);
+    }
+
+    public function promotedReports(): HasMany
+    {
+        return $this->hasMany(Report::class, 'promoted_hotspot_id');
     }
 }

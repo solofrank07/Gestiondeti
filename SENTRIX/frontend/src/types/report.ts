@@ -5,9 +5,12 @@ export interface Report {
   latitude: number;
   longitude: number;
   address?: string;
+  radius?: number | null;
   priority: 'baja' | 'media' | 'alta' | 'critica';
   source: 'ciudadano' | 'oficial' | 'etl';
   is_verified: boolean;
+  auto_approved?: boolean;
+  promoted_hotspot_id?: number | null;
   incident_date: string;
   created_at: string;
   user?: import('./auth').User;

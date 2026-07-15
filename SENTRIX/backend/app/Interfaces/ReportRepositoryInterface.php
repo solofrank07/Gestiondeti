@@ -10,7 +10,7 @@ interface ReportRepositoryInterface extends BaseRepositoryInterface
 {
     public function findByUser(int $userId): Collection;
     public function findByDateRange(string $start, string $end): Collection;
-    public function findByLocation(float $lat, float $lng, float $radiusKm): Collection;
+    public function findByLocation(float $lat, float $lng, float $radiusKm, bool $onlyApproved = false): Collection;
     public function getPendingVerification(): Collection;
     public function getByPriority(string $priority): Collection;
     public function getStatistics(array $filters = []): array;
@@ -20,4 +20,5 @@ interface ReportRepositoryInterface extends BaseRepositoryInterface
     public function getReportsByDistrict(int $provinceId): Collection;
     public function paginateByUser(int $userId, int $perPage = 15): LengthAwarePaginator;
     public function verify(int $id, int $verifiedBy): Report;
+    public function reject(int $id, int $reviewedBy): Report;
 }

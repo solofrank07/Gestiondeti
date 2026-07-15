@@ -7,12 +7,25 @@ import { useReportStore } from '@/store/reportStore';
 import { Camera, Video, Mic, MapPin } from '@/components/shared/Icons';
 import MapView, { Marker, Circle } from '@/components/map/MapView';
 import Slider from '@/components/shared/Slider';
+import { goBack } from '@/utils/navigation';
 
 export default function ReportePaso1Screen() {
   const { draft, setLocation, setAnonymous, addEvidence, setRadius } = useReportStore();
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [address, setAddress] = useState('Obteniendo ubicacion...');
   const [radius, setLocalRadius] = useState(draft.radius || 100);
+
+  const refreshAddress = async (latitude: number, longitude: number) => {
+    try {
+      const geocode = await Location.reverseGeocodeAsync({ latitude, longitude });
+      if (geocode.length > 0) {
+        const g = geocode[0];
+        setAddress([g.street, g.district, g.region].filter(Boolean).join(', ') || 'Ubicacion seleccionada');
+      }
+    } catch {
+      setAddress('Ubicacion seleccionada');
+    }
+  };
 
   useEffect(() => {
     (async () => {
@@ -23,17 +36,14 @@ export default function ReportePaso1Screen() {
       }
       const loc = await Location.getCurrentPositionAsync({});
       setLocation({ lat: loc.coords.latitude, lng: loc.coords.longitude });
-
-      const geocode = await Location.reverseGeocodeAsync({
-        latitude: loc.coords.latitude,
-        longitude: loc.coords.longitude,
-      });
-      if (geocode.length > 0) {
-        const g = geocode[0];
-        setAddress([g.street, g.district, g.region].filter(Boolean).join(', ') || 'Ubicacion actual');
-      }
+      refreshAddress(loc.coords.latitude, loc.coords.longitude);
     })();
   }, []);
+
+  const handleMarkerDragEnd = ({ latitude, longitude }: { latitude: number; longitude: number }) => {
+    setLocation({ lat: latitude, lng: longitude });
+    refreshAddress(latitude, longitude);
+  };
 
   const handleAnonymous = (val: boolean) => {
     setIsAnonymous(val);
@@ -96,7 +106,7 @@ export default function ReportePaso1Screen() {
     <ScrollView style={{ flex: 1, backgroundColor: '#f7f9fc' }}>
       {/* Header */}
       <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingTop: 60, paddingBottom: 16 }}>
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity onPress={() => goBack('/(tabs)/mapa')}>
           <Text style={{ fontSize: 24, color: '#191c1e' }}>{'<'}</Text>
         </TouchableOpacity>
         <Text style={{ flex: 1, fontSize: 18, fontWeight: '700', fontFamily: 'Inter', color: '#03224d', textAlign: 'center', marginRight: 24 }}>
@@ -150,9 +160,13 @@ export default function ReportePaso1Screen() {
                 strokeColor="#03224d"
                 strokeWidth={2}
               />
-              <Marker coordinate={{ latitude: lat, longitude: lng }}>
+              <Marker
+                coordinate={{ latitude: lat, longitude: lng }}
+                draggable
+                onDragEnd={handleMarkerDragEnd}
+              >
                 <View style={{
-                  width: 18, height: 18, borderRadius: 9,
+                  width: 22, height: 22, borderRadius: 11,
                   backgroundColor: '#ef4444', borderWidth: 3, borderColor: '#ffffff',
                   shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 4, elevation: 4,
                 }} />
@@ -164,6 +178,9 @@ export default function ReportePaso1Screen() {
             <Text style={{ fontFamily: 'Inter', fontSize: 13, color: '#747780' }}>Cargando ubicacion...</Text>
           </View>
         )}
+        <Text style={{ fontFamily: 'Inter', fontSize: 12, color: '#747780', marginTop: 4, marginBottom: 16 }}>
+          Arrastra el punto rojo para ubicar el incidente si no estás en la zona exacta. El área afectada se ajusta con el control debajo.
+        </Text>
 
         {/* Radius slider */}
         <Text style={{ fontSize: 16, fontWeight: '600', fontFamily: 'Inter', color: '#191c1e', marginBottom: 8 }}>

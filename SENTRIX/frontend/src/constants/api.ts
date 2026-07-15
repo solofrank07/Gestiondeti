@@ -26,6 +26,7 @@ export const ENDPOINTS = {
   REPORTS: '/reports',
   REPORTS_NEARBY: '/reports/nearby',
   REPORTS_VERIFY: (id: number) => `/reports/${id}/verify`,
+  REPORTS_REJECT: (id: number) => `/reports/${id}/reject`,
 
   // Geofence
   GEOFENCE_CHECK: '/geofence/check',

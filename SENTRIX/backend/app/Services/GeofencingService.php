@@ -75,7 +75,7 @@ class GeofencingService
                     'zone_id'           => $zone->id,
                     'zone_name'         => $zone->name,
                     'risk_level'        => $zone->riskLevel?->slug ?? 'unknown',
-                    'risk_score'        => $zone->risk_score,
+                    'risk_score'        => (float) $zone->risk_score,
                     'event'             => $event,
                     'distance'          => round($distance, 1),
                     'effective_radius'  => round($effectiveRadius, 0),
@@ -108,7 +108,7 @@ class GeofencingService
             'id'               => $z->id,
             'name'             => $z->name,
             'risk_level'       => $z->riskLevel?->slug,
-            'risk_score'       => $z->risk_score,
+            'risk_score'       => (float) $z->risk_score,
             'distance'         => round(GeoHelper::calculateDistance($lat, $lng, (float) $z->latitude, (float) $z->longitude), 1),
             'effective_radius' => round($this->getEffectiveRadius($z), 0),
         ])->toArray();

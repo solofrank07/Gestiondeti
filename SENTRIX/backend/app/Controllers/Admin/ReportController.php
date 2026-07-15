@@ -18,9 +18,13 @@ class ReportController extends Controller
         $query = Report::with(['crimeType', 'category', 'status', 'user']);
 
         if ($status === 'pending') {
-            $query->where('is_verified', false);
+            $query->where('is_verified', false)
+                ->where(fn($q) => $q->whereDoesntHave('status')
+                    ->orWhereHas('status', fn($s) => $s->where('slug', '!=', 'rechazado')));
         } elseif ($status === 'verified') {
             $query->where('is_verified', true);
+        } elseif ($status === 'rejected') {
+            $query->whereHas('status', fn($q) => $q->where('slug', 'rechazado'));
         }
 
         $reports = $query->latest()->paginate($perPage);

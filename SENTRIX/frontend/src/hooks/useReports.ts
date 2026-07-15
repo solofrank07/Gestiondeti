@@ -108,3 +108,18 @@ export function useVerifyReport() {
     },
   });
 }
+
+export function useRejectReport() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number) => reportService.rejectReport(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['reports'] });
+      Alert.alert('Éxito', 'Reporte rechazado.');
+    },
+    onError: (error: any) => {
+      Alert.alert('Error', handleApiError(error));
+    },
+  });
+}

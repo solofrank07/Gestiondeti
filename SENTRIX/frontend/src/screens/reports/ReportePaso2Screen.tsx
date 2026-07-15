@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, TextInput, ScrollView, Platform } from 'react-native';
 import { router } from 'expo-router';
 import { useReportStore } from '@/store/reportStore';
+import { goBack } from '@/utils/navigation';
 
 const crimeTypes = [
   { id: 'hurto', icon: '🏃', label: 'Hurto', desc: 'Sustracción sin violencia o amenaza.' },
@@ -33,7 +34,7 @@ export default function ReportePaso2Screen() {
     <ScrollView style={{ flex: 1, backgroundColor: '#f7f9fc' }}>
       {/* Header */}
       <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingTop: 60, paddingBottom: 16 }}>
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity onPress={() => goBack('/(report)/paso1')}>
           <Text style={{ fontSize: 24, color: '#191c1e' }}>←</Text>
         </TouchableOpacity>
         <Text style={{ flex: 1, fontSize: 18, fontWeight: '700', fontFamily: 'Inter', color: '#03224d', textAlign: 'center', marginRight: 24 }}>

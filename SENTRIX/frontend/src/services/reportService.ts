@@ -46,4 +46,9 @@ export const reportService = {
     const res = await api.post(ENDPOINTS.REPORTS_VERIFY(id));
     return res.data;
   },
+
+  async rejectReport(id: number): Promise<Report> {
+    const res = await api.post(ENDPOINTS.REPORTS_REJECT(id));
+    return res.data;
+  },
 };

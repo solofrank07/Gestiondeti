@@ -1,8 +1,9 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { useReport } from '@/hooks/useReports';
 import { Clock, MapPin, Calendar } from '@/components/shared/Icons';
+import { goBack } from '@/utils/navigation';
 
 const priorityColors: Record<string, string> = {
   baja: '#22c55e', media: '#eab308', alta: '#f97316', critica: '#ef4444',
@@ -28,7 +29,7 @@ export default function ReporteDetalleScreen() {
     return (
       <View style={{ flex: 1, backgroundColor: '#f7f9fc', justifyContent: 'center', alignItems: 'center', padding: 32 }}>
         <Text style={{ fontFamily: 'Inter', fontSize: 15, color: '#747780', textAlign: 'center' }}>Reporte no encontrado.</Text>
-        <TouchableOpacity onPress={() => router.back()} style={{ marginTop: 16 }}>
+        <TouchableOpacity onPress={() => goBack('/(tabs)/mapa')} style={{ marginTop: 16 }}>
           <Text style={{ fontFamily: 'Inter', fontSize: 14, color: '#03224d', fontWeight: '500' }}>Volver</Text>
         </TouchableOpacity>
       </View>
@@ -39,7 +40,7 @@ export default function ReporteDetalleScreen() {
     <ScrollView style={{ flex: 1, backgroundColor: '#f7f9fc' }}>
       {/* Header */}
       <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingTop: 60, paddingBottom: 16 }}>
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity onPress={() => goBack('/(tabs)/mapa')}>
           <Text style={{ fontSize: 24, color: '#191c1e' }}>←</Text>
         </TouchableOpacity>
         <Text style={{ flex: 1, fontSize: 18, fontWeight: '700', fontFamily: 'Inter', color: '#03224d', textAlign: 'center', marginRight: 24 }}>
@@ -82,9 +83,17 @@ export default function ReporteDetalleScreen() {
           )}
           <View style={{ backgroundColor: '#eef2f7', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8, flex: 1 }}>
             <Text style={{ fontFamily: 'Inter', fontSize: 11, color: '#747780', fontWeight: '500', marginBottom: 2 }}>Estado</Text>
-            <Text style={{ fontFamily: 'Inter', fontSize: 14, color: r.is_verified ? '#22c55e' : '#eab308', fontWeight: '600' }}>
-              {r.is_verified ? 'Verificado' : 'Pendiente'}
+            <Text style={{
+              fontFamily: 'Inter', fontSize: 14, fontWeight: '600',
+              color: r.is_verified ? '#22c55e' : r.status?.slug === 'rechazado' ? '#ef4444' : '#eab308',
+            }}>
+              {r.is_verified ? 'Verificado' : r.status?.slug === 'rechazado' ? 'Rechazado' : 'Pendiente'}
             </Text>
+            {r.is_verified && (
+              <Text style={{ fontFamily: 'Inter', fontSize: 11, color: '#747780', marginTop: 2 }}>
+                {r.auto_approved ? 'Auto-aprobado (punto picante)' : 'Revisado manualmente'}
+              </Text>
+            )}
           </View>
         </View>
 
@@ -128,7 +137,7 @@ export default function ReporteDetalleScreen() {
 
         {/* Back button */}
         <TouchableOpacity
-          onPress={() => router.back()}
+          onPress={() => goBack('/(tabs)/mapa')}
           style={{ backgroundColor: '#03224d', paddingVertical: 14, borderRadius: 12, alignItems: 'center', marginBottom: 40 }}
         >
           <Text style={{ color: '#ffffff', fontFamily: 'Inter', fontSize: 16, fontWeight: '600' }}>Volver</Text>

@@ -18,6 +18,7 @@ class Report extends Model
         'title', 'description', 'latitude', 'longitude', 'address',
         'incident_date', 'priority', 'source', 'reporter_ip',
         'is_verified', 'verified_at', 'verified_by', 'radius',
+        'auto_approved', 'promoted_hotspot_id',
     ];
 
     protected function casts(): array
@@ -28,6 +29,7 @@ class Report extends Model
             'incident_date' => 'datetime',
             'is_verified' => 'boolean',
             'verified_at' => 'datetime',
+            'auto_approved' => 'boolean',
         ];
     }
 
@@ -79,5 +81,10 @@ class Report extends Model
     public function verifiedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'verified_by');
+    }
+
+    public function promotedHotspot(): BelongsTo
+    {
+        return $this->belongsTo(RiskZone::class, 'promoted_hotspot_id');
     }
 }

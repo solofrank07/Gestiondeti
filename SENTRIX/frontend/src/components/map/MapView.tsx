@@ -7,6 +7,7 @@ import {
   Marker as MLMarker,
   GeoJSONSource as MLGeoJSONSource,
   Layer as MLLayer,
+  ViewAnnotation as MLViewAnnotation,
 } from '@maplibre/maplibre-react-native';
 
 export interface Region {
@@ -20,6 +21,7 @@ export const PROVIDER_GOOGLE = 'google';
 
 export const MapView = forwardRef(({ children, style, initialRegion, onRegionChangeComplete }: any, ref) => {
   const cameraRef = useRef<any>(null);
+  const mapRef = useRef<any>(null);
 
   useImperativeHandle(ref, () => ({
     animateToRegion: (region: Region, duration = 500) => {
@@ -31,23 +33,44 @@ export const MapView = forwardRef(({ children, style, initialRegion, onRegionCha
     },
   }));
 
-  const handleRegionChange = async (state: any) => {
-    if (onRegionChangeComplete && state?.properties?.center) {
-      const center = state.properties.center;
-      onRegionChangeComplete({
-        latitude: center[1],
-        longitude: center[0],
-        latitudeDelta: 0.1,
-        longitudeDelta: 0.1,
-      });
+  const handleRegionChange = (event: any) => {
+    if (!onRegionChangeComplete) return;
+    // La forma del evento cambio entre versiones de la libreria: nueva
+    // (11.x) viene plano en event.nativeEvent {center, bounds}, la vieja
+    // traia state.properties.center sin bounds reales. Soporta ambas.
+    const payload = event?.nativeEvent ?? event;
+    const center = payload?.center ?? payload?.properties?.center;
+    const bounds = payload?.bounds;
+    if (!center) return;
+
+    const [lng, lat] = center;
+    const [latitudeDelta, longitudeDelta] = bounds
+      ? [bounds[3] - bounds[1], bounds[2] - bounds[0]]
+      : [0.1, 0.1];
+
+    onRegionChangeComplete({
+      latitude: lat,
+      longitude: lng,
+      latitudeDelta,
+      longitudeDelta,
+    });
+  };
+
+  const handleMapLoaded = async () => {
+    // Sin esto no habia bounds hasta el primer pan/zoom manual del usuario.
+    const state = await mapRef.current?.getViewState?.();
+    if (state?.center && state?.bounds) {
+      handleRegionChange({ center: state.center, bounds: state.bounds });
     }
   };
 
   return (
     <MLMap
+      ref={mapRef}
       style={[styles.map, style]}
       mapStyle="https://tiles.openfreemap.org/styles/liberty"
       onRegionDidChange={handleRegionChange}
+      onDidFinishLoadingMap={handleMapLoaded}
     >
       <MLCamera
         ref={cameraRef}
@@ -61,7 +84,25 @@ export const MapView = forwardRef(({ children, style, initialRegion, onRegionCha
   );
 });
 
-export const Marker = ({ coordinate, children, onPress }: any) => {
+export const Marker = ({ coordinate, children, onPress, draggable, onDrag, onDragEnd }: any) => {
+  if (draggable) {
+    const emit = (handler: any) => (e: any) => {
+      const [lng, lat] = e.nativeEvent.lngLat;
+      handler?.({ latitude: lat, longitude: lng });
+    };
+
+    return (
+      <MLViewAnnotation
+        lngLat={[coordinate.longitude, coordinate.latitude]}
+        draggable
+        onDrag={emit(onDrag)}
+        onDragEnd={emit(onDragEnd)}
+      >
+        {children}
+      </MLViewAnnotation>
+    );
+  }
+
   return (
     <MLMarker
       lngLat={[coordinate.longitude, coordinate.latitude]}

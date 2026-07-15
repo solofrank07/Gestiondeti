@@ -3,13 +3,13 @@ import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, RefreshCon
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/services/api';
 import { ENDPOINTS } from '@/constants/api';
-import { useVerifyReport } from '@/hooks/useReports';
+import { useVerifyReport, useRejectReport } from '@/hooks/useReports';
 import { router } from 'expo-router';
 import { Search, MapPin, AlertTriangle } from '@/components/shared/Icons';
 
 export default function AdminReportsScreen() {
   const queryClient = useQueryClient();
-  const [filter, setFilter] = useState<'all' | 'pending' | 'verified'>('pending');
+  const [filter, setFilter] = useState<'all' | 'pending' | 'verified' | 'rejected'>('pending');
   const [search, setSearch] = useState('');
 
   const { data, isLoading, refetch } = useQuery({
@@ -18,6 +18,7 @@ export default function AdminReportsScreen() {
   });
 
   const verifyMutation = useVerifyReport();
+  const rejectMutation = useRejectReport();
 
   const reports = Array.isArray(data) ? data : data?.data ?? [];
 
@@ -55,7 +56,7 @@ export default function AdminReportsScreen() {
         </View>
         {/* Filter tabs */}
         <View style={{ flexDirection: 'row', gap: 8, marginTop: 12 }}>
-          {(['all', 'pending', 'verified'] as const).map(f => (
+          {(['all', 'pending', 'verified', 'rejected'] as const).map(f => (
             <TouchableOpacity
               key={f}
               onPress={() => setFilter(f)}
@@ -68,7 +69,7 @@ export default function AdminReportsScreen() {
                 fontFamily: 'Inter', fontSize: 13, fontWeight: '600',
                 color: filter === f ? '#ffffff' : '#747780',
               }}>
-                {f === 'all' ? 'Todos' : f === 'pending' ? 'Pendientes' : 'Verificados'}
+                {f === 'all' ? 'Todos' : f === 'pending' ? 'Pendientes' : f === 'verified' ? 'Verificados' : 'Rechazados'}
               </Text>
             </TouchableOpacity>
           ))}
@@ -95,19 +96,33 @@ export default function AdminReportsScreen() {
             </View>
           )}
 
-          {filtered.map((r: any) => (
+          {filtered.map((r: any) => {
+            const isRejected = r.status?.slug === 'rechazado';
+            const statusColor = r.is_verified ? '#22c55e' : isRejected ? '#ef4444' : '#eab308';
+            const statusLabel = r.is_verified ? 'Verificado' : isRejected ? 'Rechazado' : 'Pendiente';
+            return (
             <View key={r.id} style={{
               backgroundColor: '#ffffff', borderRadius: 12, borderWidth: 1, borderColor: '#e0e3e6',
               padding: 16, marginBottom: 10,
             }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: r.is_verified ? '#22c55e' : '#eab308' }} />
+                <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: statusColor }} />
                 <Text style={{ fontFamily: 'Inter', fontSize: 13, color: '#747780', fontWeight: '500' }}>
-                  {r.is_verified ? 'Verificado' : 'Pendiente'}
+                  {statusLabel}
                 </Text>
                 <Text style={{ fontFamily: 'Inter', fontSize: 12, color: '#03224d', fontWeight: '600' }}>
                   #{r.id}
                 </Text>
+                {r.is_verified && (
+                  <View style={{
+                    paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10,
+                    backgroundColor: r.auto_approved ? '#dbeafe' : '#f0f1f3',
+                  }}>
+                    <Text style={{ fontFamily: 'Inter', fontSize: 11, fontWeight: '600', color: r.auto_approved ? '#1d4ed8' : '#747780' }}>
+                      {r.auto_approved ? 'Auto-aprobado' : 'Revisado manualmente'}
+                    </Text>
+                  </View>
+                )}
               </View>
 
               <Text style={{ fontFamily: 'Inter', fontSize: 15, fontWeight: '600', color: '#191c1e', marginBottom: 4 }}>
@@ -138,20 +153,32 @@ export default function AdminReportsScreen() {
                   <Text style={{ color: '#191c1e', fontFamily: 'Inter', fontSize: 13, fontWeight: '600' }}>Ver detalle</Text>
                 </TouchableOpacity>
 
-                {!r.is_verified && (
-                  <TouchableOpacity
-                    onPress={() => verifyMutation.mutate(r.id, { onSuccess: () => refetch() })}
-                    disabled={verifyMutation.isPending}
-                    style={{ flex: 1, backgroundColor: '#22c55e', borderRadius: 8, paddingVertical: 8, alignItems: 'center' }}
-                  >
-                    <Text style={{ color: '#ffffff', fontFamily: 'Inter', fontSize: 13, fontWeight: '600' }}>
-                      {verifyMutation.isPending ? '...' : 'Verificar'}
-                    </Text>
-                  </TouchableOpacity>
+                {!r.is_verified && !isRejected && (
+                  <>
+                    <TouchableOpacity
+                      onPress={() => verifyMutation.mutate(r.id, { onSuccess: () => refetch() })}
+                      disabled={verifyMutation.isPending}
+                      style={{ flex: 1, backgroundColor: '#22c55e', borderRadius: 8, paddingVertical: 8, alignItems: 'center' }}
+                    >
+                      <Text style={{ color: '#ffffff', fontFamily: 'Inter', fontSize: 13, fontWeight: '600' }}>
+                        {verifyMutation.isPending ? '...' : 'Aprobar'}
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => rejectMutation.mutate(r.id, { onSuccess: () => refetch() })}
+                      disabled={rejectMutation.isPending}
+                      style={{ flex: 1, backgroundColor: '#ef4444', borderRadius: 8, paddingVertical: 8, alignItems: 'center' }}
+                    >
+                      <Text style={{ color: '#ffffff', fontFamily: 'Inter', fontSize: 13, fontWeight: '600' }}>
+                        {rejectMutation.isPending ? '...' : 'Rechazar'}
+                      </Text>
+                    </TouchableOpacity>
+                  </>
                 )}
               </View>
             </View>
-          ))}
+            );
+          })}
         </ScrollView>
       )}
     </View>

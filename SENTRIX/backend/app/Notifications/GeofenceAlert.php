@@ -42,10 +42,10 @@ class GeofenceAlert extends Notification
             'body'        => $bodies[$event] ?? '',
             'event'       => $event,
             'risk_zone_id'=> $this->zone->id,
-            'risk_score'  => $this->zone->risk_score,
+            'risk_score'  => (float) $this->zone->risk_score,
             'risk_level'  => $this->zone->riskLevel?->slug,
-            'latitude'    => $this->zone->latitude,
-            'longitude'   => $this->zone->longitude,
+            'latitude'    => (float) $this->zone->latitude,
+            'longitude'   => (float) $this->zone->longitude,
             'type'        => 'geofence_alert',
         ];
     }

@@ -4,9 +4,15 @@ namespace App\Services;
 
 use App\Interfaces\RiskZoneRepositoryInterface;
 use App\Interfaces\RegionRepositoryInterface;
+use Illuminate\Support\Facades\Cache;
 
 class MapService
 {
+    // TTL corto: el mapa se poll-ea cada 30s desde el cliente, este cache
+    // solo absorbe pedidos concurrentes/repetidos sobre el mismo viewport,
+    // no reemplaza la frescura de los datos.
+    private const CACHE_TTL_SECONDS = 15;
+
     public function __construct(
         private RiskZoneRepositoryInterface $riskZoneRepo,
         private RegionRepositoryInterface $regionRepo,
@@ -14,26 +20,30 @@ class MapService
 
     public function getRiskZones(float $north, float $south, float $east, float $west): array
     {
-        $zones = $this->riskZoneRepo->getZonesInBounds($north, $south, $east, $west);
-        return $zones->map(fn($z) => [
-            'id' => $z->id,
-            'name' => $z->name,
-            'risk_score' => $z->risk_score,
-            'risk_level' => $z->riskLevel?->slug,
-            'color' => $z->riskLevel?->color,
-            'latitude' => (float) $z->latitude,
-            'longitude' => (float) $z->longitude,
-            'radius' => (float) $z->radius_meters,
-            'polygons' => $z->polygons->map(fn($p) => [
-                'points' => $p->points->map(fn($pt) => [
-                    'lat' => (float) $pt->latitude,
-                    'lng' => (float) $pt->longitude,
-                ]),
-                'fill_color' => $p->fill_color,
-                'fill_opacity' => $p->fill_opacity,
-                'stroke_width' => $p->stroke_width,
-            ]),
-        ])->toArray();
+        $key = 'map:risk-zones:' . implode(':', array_map(fn($v) => round($v, 3), [$north, $south, $east, $west]));
+
+        return Cache::remember($key, self::CACHE_TTL_SECONDS, function () use ($north, $south, $east, $west) {
+            $zones = $this->riskZoneRepo->getZonesInBounds($north, $south, $east, $west);
+            return $zones->map(fn($z) => [
+                'id' => $z->id,
+                'name' => $z->name,
+                'risk_score' => (float) $z->risk_score,
+                'risk_level' => $z->riskLevel?->slug,
+                'color' => $z->riskLevel?->color,
+                'latitude' => (float) $z->latitude,
+                'longitude' => (float) $z->longitude,
+                'radius' => (float) $z->radius_meters,
+                'polygons' => $z->polygons->map(fn($p) => [
+                    'points' => $p->points->map(fn($pt) => [
+                        'lat' => (float) $pt->latitude,
+                        'lng' => (float) $pt->longitude,
+                    ])->all(),
+                    'fill_color' => $p->fill_color,
+                    'fill_opacity' => $p->fill_opacity,
+                    'stroke_width' => $p->stroke_width,
+                ])->all(),
+            ])->all();
+        });
     }
 
     public function getClusters(float $north, float $south, float $east, float $west, int $zoom): array
