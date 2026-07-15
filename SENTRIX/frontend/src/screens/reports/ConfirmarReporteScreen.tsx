@@ -48,6 +48,7 @@ export default function ConfirmarReporteScreen() {
         incident_date: draft.incidentDate ? new Date(draft.incidentDate).toISOString() : new Date().toISOString(),
         crime_type_id: currentCrimeType?.id ?? undefined,
         radius: draft.radius || undefined,
+        is_anonymous: draft.isAnonymous || undefined,
         media: mediaFiles.length > 0 ? mediaFiles : undefined,
       });
       const reportId = (created as any)?.data?.id || (created as any)?.id;

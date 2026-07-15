@@ -21,6 +21,7 @@ class StoreReportRequest extends FormRequest
             'incident_date' => 'required|date|before_or_equal:now',
             'priority' => 'nullable|in:baja,media,alta,critica',
             'radius' => 'nullable|integer|min:0|max:5000',
+            'is_anonymous' => 'nullable|boolean',
             'media' => 'nullable|array',
             'media.*' => 'file|mimes:jpg,jpeg,png,gif,mp4,mov,avi|max:51200',
         ];
