@@ -52,8 +52,8 @@ export default function ConfirmarReporteScreen() {
       });
       const reportId = (created as any)?.data?.id || (created as any)?.id;
       const trackingId = reportId ? `RPT-${reportId}` : `RPT-${Date.now().toString(36).toUpperCase()}`;
-      // Invalidate nearby reports so new one appears on map
-      queryClient.invalidateQueries({ queryKey: ['reports', 'nearby'] });
+      // Invalidate report caches so new report appears on map and in alertas list
+      queryClient.invalidateQueries({ queryKey: ['reports'] });
       resetDraft();
       router.replace({ pathname: '/(report)/enviado', params: { trackingId } });
     } catch (e: any) {
