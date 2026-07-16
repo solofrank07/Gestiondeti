@@ -8,10 +8,9 @@ use Illuminate\Support\Facades\Cache;
 
 class MapService
 {
-    // TTL corto: el mapa se poll-ea cada 30s desde el cliente, este cache
-    // solo absorbe pedidos concurrentes/repetidos sobre el mismo viewport,
-    // no reemplaza la frescura de los datos.
-    private const CACHE_TTL_SECONDS = 15;
+    // Cliente ya no pollea cada 30s — usa staleTime en React Query.
+    // Cache absorbe pedidos repetidos sobre mismo viewport.
+    private const CACHE_TTL_SECONDS = 300;
 
     public function __construct(
         private RiskZoneRepositoryInterface $riskZoneRepo,

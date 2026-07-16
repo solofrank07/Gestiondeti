@@ -93,7 +93,8 @@ export function useNearbyReports(lat?: number, lng?: number, radius = 1) {
     queryKey: ['reports', 'nearby', lat, lng, radius],
     queryFn: () => reportService.getNearby(lat!, lng!, radius),
     enabled: lat !== undefined && lng !== undefined,
-    refetchInterval: 30_000,
+    staleTime: 30_000,
+    retry: 1,
   });
 }
 

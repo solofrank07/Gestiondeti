@@ -11,14 +11,13 @@ export function useRiskZones(bounds: Bounds | null) {
     queryFn: async () => {
       if (!bounds) return [];
       const zones = await mapService.getRiskZones(bounds);
-      // Una respuesta malformada (ej. request abortada a mitad de un
-      // reload, backend caido) no debe dejar el store en un estado no-array
-      // y romper los .map() que lo consumen.
       const safeZones = Array.isArray(zones) ? zones : [];
       setRiskZones(safeZones);
       return safeZones;
     },
     enabled: !!bounds,
+    staleTime: 60_000,
+    retry: 1,
   });
 }
 
@@ -35,6 +34,7 @@ export function useHeatmap(bounds: Bounds | null, zoom: number) {
       return safeData;
     },
     enabled: !!bounds,
+    retry: 1,
   });
 }
 

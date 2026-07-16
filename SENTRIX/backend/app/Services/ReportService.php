@@ -86,7 +86,7 @@ class ReportService
         // rompe al deserializar objetos) y se rehidrata sin ir a la BD.
         $key = sprintf('reports:nearby:%s:%s:%s:%s', round($lat, 3), round($lng, 3), round($radiusKm, 2), $onlyApproved ? 1 : 0);
 
-        $rows = Cache::remember($key, 15, function () use ($lat, $lng, $radiusKm, $onlyApproved) {
+        $rows = Cache::remember($key, 900, function () use ($lat, $lng, $radiusKm, $onlyApproved) {
             return $this->reportRepo->findByLocation($lat, $lng, $radiusKm, $onlyApproved)->toArray();
         });
 
