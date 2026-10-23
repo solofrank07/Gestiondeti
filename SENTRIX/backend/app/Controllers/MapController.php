@@ -43,7 +43,17 @@ class MapController extends Controller
             $request->north, $request->south, $request->east, $request->west
         );
 
-        return response()->json($zones);
+        return response()->json([
+            'zones' => $zones,
+            'version' => MapService::getRiskZonesCacheVersion(),
+        ]);
+    }
+
+    public function getRiskZonesVersion(): JsonResponse
+    {
+        return response()->json([
+            'version' => MapService::getRiskZonesCacheVersion(),
+        ]);
     }
 
     /**

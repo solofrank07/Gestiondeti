@@ -3,8 +3,13 @@ import { ENDPOINTS } from '@/constants/api';
 import { RiskZone, HeatmapPoint, MapCluster, Region, Province, District, Bounds } from '@/types/map';
 
 export const mapService = {
-  async getRiskZones(bounds: Bounds): Promise<RiskZone[]> {
+  async getRiskZones(bounds: Bounds): Promise<{ zones: RiskZone[]; version: number }> {
     const res = await api.get(ENDPOINTS.RISK_ZONES, { params: bounds });
+    return res.data;
+  },
+
+  async getRiskZonesVersion(): Promise<{ version: number }> {
+    const res = await api.get(ENDPOINTS.RISK_ZONES + '/version');
     return res.data;
   },
 

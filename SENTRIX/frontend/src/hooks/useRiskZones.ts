@@ -1,22 +1,23 @@
 import { useQuery } from '@tanstack/react-query';
 import { mapService } from '@/services/mapService';
 import { useMapStore } from '@/store/mapStore';
-import { Bounds } from '@/types/map';
+import type { Bounds } from '@/types/map';
 
-export function useRiskZones(bounds: Bounds | null) {
+// Peru bounds — always fetch all zones, never filter by viewport
+const PERU_BOUNDS = { north: -0.03, south: -18.35, east: -68.65, west: -81.33 };
+
+export function useRiskZones() {
   const setRiskZones = useMapStore((s) => s.setRiskZones);
 
   return useQuery({
-    queryKey: ['riskZones', bounds],
+    queryKey: ['riskZones'],
     queryFn: async () => {
-      if (!bounds) return [];
-      const zones = await mapService.getRiskZones(bounds);
-      const safeZones = Array.isArray(zones) ? zones : [];
+      const res = await mapService.getRiskZones(PERU_BOUNDS);
+      const safeZones = Array.isArray(res.zones) ? res.zones : [];
       setRiskZones(safeZones);
       return safeZones;
     },
-    enabled: !!bounds,
-    staleTime: 60_000,
+    staleTime: Infinity,
     retry: 1,
   });
 }

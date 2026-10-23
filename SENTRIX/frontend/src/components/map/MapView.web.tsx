@@ -58,6 +58,9 @@ export const MapView = forwardRef(({ children, style, initialRegion, onRegionCha
       style: 'https://tiles.openfreemap.org/styles/liberty',
       center: [initialRegion?.longitude || -80.632, initialRegion?.latitude || -5.194],
       zoom: 12,
+      maxBounds: [[-81.33, -18.35], [-68.65, -0.03]],
+      minZoom: 5,
+      maxZoom: 18,
       attributionControl: false,
     });
 

@@ -19,6 +19,9 @@ export interface Region {
 
 export const PROVIDER_GOOGLE = 'google';
 
+const PERU_BOUNDS = { south: -18.35, north: -0.03, west: -81.33, east: -68.65 };
+function clamp(v: number, min: number, max: number) { return Math.min(Math.max(v, min), max); }
+
 export const MapView = forwardRef(({ children, style, initialRegion, onRegionChangeComplete }: any, ref) => {
   const cameraRef = useRef<any>(null);
   const mapRef = useRef<any>(null);
@@ -26,7 +29,10 @@ export const MapView = forwardRef(({ children, style, initialRegion, onRegionCha
   useImperativeHandle(ref, () => ({
     animateToRegion: (region: Region, duration = 500) => {
       cameraRef.current?.setCamera({
-        centerCoordinate: [region.longitude, region.latitude],
+        centerCoordinate: [
+          clamp(region.longitude, PERU_BOUNDS.west, PERU_BOUNDS.east),
+          clamp(region.latitude, PERU_BOUNDS.south, PERU_BOUNDS.north),
+        ],
         zoomLevel: 12,
         duration,
       });
@@ -43,17 +49,14 @@ export const MapView = forwardRef(({ children, style, initialRegion, onRegionCha
     const bounds = payload?.bounds;
     if (!center) return;
 
-    const [lng, lat] = center;
+    let [lng, lat] = center;
+    lat = clamp(lat, PERU_BOUNDS.south, PERU_BOUNDS.north);
+    lng = clamp(lng, PERU_BOUNDS.west, PERU_BOUNDS.east);
     const [latitudeDelta, longitudeDelta] = bounds
       ? [bounds[3] - bounds[1], bounds[2] - bounds[0]]
       : [0.1, 0.1];
 
-    onRegionChangeComplete({
-      latitude: lat,
-      longitude: lng,
-      latitudeDelta,
-      longitudeDelta,
-    });
+    onRegionChangeComplete({ latitude: lat, longitude: lng, latitudeDelta, longitudeDelta });
   };
 
   const handleMapLoaded = async () => {
@@ -74,6 +77,8 @@ export const MapView = forwardRef(({ children, style, initialRegion, onRegionCha
     >
       <MLCamera
         ref={cameraRef}
+        minZoomLevel={5}
+        maxZoomLevel={18}
         initialViewState={{
           centerCoordinate: [initialRegion?.longitude || -80.632, initialRegion?.latitude || -5.194],
           zoomLevel: 12,

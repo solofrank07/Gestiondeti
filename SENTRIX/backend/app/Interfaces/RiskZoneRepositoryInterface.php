@@ -12,5 +12,6 @@ interface RiskZoneRepositoryInterface extends BaseRepositoryInterface
     public function getCriticalZones(int $limit = 10): Collection;
     public function updateScore(int $id, float $score, int $levelId): RiskZone;
     public function getActiveZones(): Collection;
+    public function getActiveZonesWithPolygons(): Collection;
     public function getZonesInBounds(float $north, float $south, float $east, float $west): Collection;
 }

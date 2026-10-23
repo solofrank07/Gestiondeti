@@ -54,7 +54,7 @@ export default function HeatmapScreen() {
 
   const { isLoading: heatmapLoading } = useHeatmap(showClusters ? null : derivedBounds, zoom);
   const { isLoading: clusterLoading } = useClusters(showClusters ? derivedBounds : null, zoom);
-  const { isLoading: zonesLoading } = useRiskZones(showClusters ? derivedBounds : null);
+  const { isLoading: zonesLoading } = useRiskZones();
 
   const isLoading = heatmapLoading || clusterLoading || zonesLoading;
 

@@ -33,6 +33,7 @@ Route::prefix('v1')->group(function () {
 
     // Public map
     Route::get('map/risk-zones', [MapController::class, 'getRiskZones']);
+    Route::get('map/risk-zones/version', [MapController::class, 'getRiskZonesVersion']);
     Route::get('map/heatmap', [MapController::class, 'getHeatmap']);
     Route::get('map/heatmap/tile/{z}/{x}/{y}', [MapController::class, 'getHeatmapTile']);
     Route::get('map/clusters', [MapController::class, 'getClusters']);

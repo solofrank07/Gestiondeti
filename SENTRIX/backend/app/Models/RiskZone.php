@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Interfaces\HeatmapCacheRepositoryInterface;
+use App\Services\MapService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -44,6 +45,8 @@ class RiskZone extends Model
 
         $invalidate = fn(self $zone) => self::invalidateHeatmapCache($zone);
 
+        static::saved(function () { MapService::bumpRiskZonesCacheVersion(); });
+        static::deleted(function () { MapService::bumpRiskZonesCacheVersion(); });
         static::saved($invalidate);
         static::deleted($invalidate);
     }

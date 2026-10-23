@@ -8,6 +8,8 @@ import { useMapStore } from '@/store/mapStore';
 import RiskZonePolygon from '@/components/map/RiskZonePolygon';
 import { router } from 'expo-router';
 import { useNearbyReports } from '@/hooks/useReports';
+import { useGeofenceCheck } from '@/hooks/useGeofence';
+import { AlertTriangle } from '@/components/shared/Icons';
 
 const CRIME_FILTERS = ['Todos', 'Hurto', 'Robo agravado', 'Extorsión', 'Sicariato'];
 const RISK_LEVELS = [
@@ -27,12 +29,46 @@ export default function MapScreen() {
     latitudeDelta: 0.5,
     longitudeDelta: 0.5,
   });
+  const [zoneAlert, setZoneAlert] = useState<{ zone_name: string; risk_level: string; risk_score: number } | null>(null);
+  const alertTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastCheckPosRef = useRef<{ lat: number; lng: number } | null>(null);
 
-  const { isLoading } = useRiskZones(bounds);
+  const { isLoading } = useRiskZones();
   const riskZonesRaw = useMapStore((s) => s.riskZones);
   const riskZones = Array.isArray(riskZonesRaw) ? riskZonesRaw : [];
   const { data: nearbyReports } = useNearbyReports(region.latitude, region.longitude);
   const reports = Array.isArray(nearbyReports) ? nearbyReports : [];
+  const geofenceCheck = useGeofenceCheck();
+
+  // Check if user entered a hot zone (max once per 150m movement)
+  React.useEffect(() => {
+    if (!location) return;
+    const lat = location.coords.latitude;
+    const lng = location.coords.longitude;
+    // Skip default Piura fallback
+    if (Math.abs(lat - -5.194) < 0.01 && Math.abs(lng - -80.632) < 0.01) return;
+    if (lastCheckPosRef.current) {
+      const R = 6371000;
+      const dLat = ((lat - lastCheckPosRef.current.lat) * Math.PI) / 180;
+      const dLng = ((lng - lastCheckPosRef.current.lng) * Math.PI) / 180;
+      const a = Math.sin(dLat / 2) ** 2 + Math.cos((lastCheckPosRef.current.lat * Math.PI) / 180) * Math.cos((lat * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
+      if (R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)) < 150) return;
+    }
+    lastCheckPosRef.current = { lat, lng };
+    geofenceCheck.mutate(
+      { lat, lng },
+      {
+        onSuccess: (res: any) => {
+          if (res?.total_alerts > 0 && res?.alerts?.length > 0) {
+            const a = res.alerts[0];
+            setZoneAlert({ zone_name: a.zone_name, risk_level: a.risk_level, risk_score: a.risk_score });
+            if (alertTimerRef.current) clearTimeout(alertTimerRef.current);
+            alertTimerRef.current = setTimeout(() => setZoneAlert(null), 300000);
+          }
+        },
+      }
+    );
+  }, [location?.coords?.latitude, location?.coords?.longitude]);
 
   React.useEffect(() => { requestPermission(); }, []);
 
@@ -64,6 +100,24 @@ export default function MapScreen() {
         initialRegion={region}
         onRegionChangeComplete={onRegionChangeComplete}
       >
+        {/* User location dot */}
+        {location?.coords && (
+          <Marker
+            coordinate={{ latitude: location.coords.latitude, longitude: location.coords.longitude }}
+          >
+            <View style={{
+              width: 20, height: 20, borderRadius: 10,
+              backgroundColor: '#3b82f6',
+              borderWidth: 3, borderColor: '#ffffff',
+              shadowColor: '#000', shadowOpacity: 0.3, shadowRadius: 6, elevation: 6,
+            }}>
+              <View style={{
+                width: 8, height: 8, borderRadius: 4,
+                backgroundColor: '#ffffff', alignSelf: 'center', marginTop: 3,
+              }} />
+            </View>
+          </Marker>
+        )}
         {riskZones.map((zone) => (
           <RiskZonePolygon key={zone.id} zone={zone} />
         ))}
@@ -188,6 +242,26 @@ export default function MapScreen() {
         <MapPin size={22} color="#03224d" />
       </TouchableOpacity>
 
+      {/* Zone alert banner */}
+      {zoneAlert && (
+        <View style={{
+          position: 'absolute', top: 168, right: 16, left: 100,
+          backgroundColor: zoneAlert.risk_level === 'alto' ? '#ef4444' : zoneAlert.risk_level === 'medio' ? '#eab308' : '#22c55e',
+          borderRadius: 12, padding: 12, flexDirection: 'row', alignItems: 'center',
+          shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 8, elevation: 5,
+        }}>
+          <AlertTriangle size={20} color="#ffffff" />
+          <View style={{ marginLeft: 10, flex: 1 }}>
+            <Text style={{ fontFamily: 'Inter', fontSize: 13, fontWeight: '700', color: '#ffffff' }}>
+              Zona {zoneAlert.risk_level.toUpperCase()}
+            </Text>
+            <Text style={{ fontFamily: 'Inter', fontSize: 12, color: '#ffffff', opacity: 0.9 }}>
+              {zoneAlert.zone_name} — Score: {zoneAlert.risk_score.toFixed(0)}/100
+            </Text>
+          </View>
+        </View>
+      )}
+
       {/* Bottom info card */}
       <View style={{
         position: 'absolute', bottom: 60, left: 16, right: 16,
@@ -197,6 +271,7 @@ export default function MapScreen() {
         <Text style={{ fontFamily: 'Inter', fontSize: 13, fontWeight: '600', color: '#03224d' }}>Alerta Piura</Text>
         <Text style={{ fontFamily: 'Inter', fontSize: 12, color: '#747780', marginTop: 2 }}>
           Zonas de riesgo: {riskZones.length}
+          {zoneAlert ? ` · ${zoneAlert.zone_name}` : ''}
         </Text>
       </View>
     </View>

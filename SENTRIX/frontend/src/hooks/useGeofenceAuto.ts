@@ -8,24 +8,8 @@ import { notificationService } from '@/services/notificationService';
 
 const GEOFENCE_TASK = 'SENTRIX_GEOFENCE_BACKGROUND';
 const CHECK_INTERVAL_MS = 60000;
-const MIN_DISTANCE_METERS = 150;
-const NOTIFICATION_DEDUP_MS = 900000;
+const NOTIFICATION_DEDUP_MS = 300000;
 const notifiedZonesRef = new Map<number, number>();
-
-function haversine(
-  a: { lat: number; lng: number },
-  b: { lat: number; lng: number }
-): number {
-  const R = 6371000;
-  const dLat = ((b.lat - a.lat) * Math.PI) / 180;
-  const dLng = ((b.lng - a.lng) * Math.PI) / 180;
-  const a2 =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos((a.lat * Math.PI) / 180) *
-      Math.cos((b.lat * Math.PI) / 180) *
-      Math.sin(dLng / 2) ** 2;
-  return R * 2 * Math.atan2(Math.sqrt(a2), Math.sqrt(1 - a2));
-}
 
 async function sendGeofenceNotifications(result: { total_alerts: number; alerts: Array<{ zone_id: number; risk_level: string; zone_name: string; risk_score: number }> }) {
   if (!result || result.total_alerts === 0) return;
@@ -74,7 +58,7 @@ export async function registerBackgroundTask() {
   await Location.startLocationUpdatesAsync(GEOFENCE_TASK, {
     accuracy: Location.Accuracy.Balanced,
     timeInterval: CHECK_INTERVAL_MS,
-    distanceInterval: MIN_DISTANCE_METERS,
+    distanceInterval: 150,
     showsBackgroundLocationIndicator: true,
     foregroundService: {
       notificationTitle: 'SENTRIX',
@@ -87,25 +71,15 @@ export async function registerBackgroundTask() {
 export function useGeofenceAuto() {
   const { location } = useLocationContext();
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const lastPosRef = useRef<{ lat: number; lng: number } | null>(null);
   const appStateRef = useRef<AppStateStatus>(AppState.currentState);
 
   const runCheck = useCallback(async () => {
     if (!location) return;
-    const lat = location.coords.latitude;
-    const lng = location.coords.longitude;
-
-    if (
-      lastPosRef.current &&
-      haversine(lastPosRef.current, { lat, lng }) < MIN_DISTANCE_METERS
-    ) {
-      return;
-    }
-
-    lastPosRef.current = { lat, lng };
-
     try {
-      const result = await geofenceService.checkProximity(lat, lng);
+      const result = await geofenceService.checkProximity(
+        location.coords.latitude,
+        location.coords.longitude
+      );
       await sendGeofenceNotifications(result);
     } catch {}
   }, [location]);
